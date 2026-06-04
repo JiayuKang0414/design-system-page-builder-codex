@@ -43,7 +43,7 @@ Same library lookup as `/build-landing-page` — read `images/images-index.json`
 
 ## Output
 
-Write to `/Users/zjocson/repos/design-system-page-builder/examples/{slug}.html`. Confirm the filename. If a preview server is running, verify the page renders before reporting success.
+Write to `examples/{slug}.html`. Confirm the filename. If a preview server is running, verify the page renders before reporting success.
 
 ## Harvest overrides (final step)
 

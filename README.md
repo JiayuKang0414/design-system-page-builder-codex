@@ -1,18 +1,19 @@
 # UMD Design System Page Builder
 
-A Claude-assisted workflow for generating complete, valid HTML pages using the [UMD Design System](https://github.com/UMD-Digital/design-system) web components (`@universityofmaryland/web-components-library`).
+A Codex-ready workflow for generating complete, valid HTML pages using the [UMD Design System](https://github.com/UMD-Digital/design-system) web components (`@universityofmaryland/web-components-library`). The original Claude recipes are preserved in `.claude/commands/`; Codex uses `AGENTS.md` as its main project guide.
 
 ## What this is
 
-Feed page content or a site URL into a Claude project and get back a complete, standards-compliant UMD Design System HTML page. The system is built on a verified component registry, a set of composition rules, and a ready-to-copy page template — all maintained against a specific pinned version of the design system.
+Feed page content or a site URL into Codex and get back a complete, standards-compliant UMD Design System HTML page. The system is built on a verified component registry, a set of composition rules, task recipes, and a ready-to-copy page template.
 
-**Current DS version:** `@universityofmaryland/web-components-library@1.18.2`
+**Verified registry DS version:** `@universityofmaryland/web-components-library@1.18.12`
 
 ## Repository structure
 
 ```
 design-system-page-builder/
 ├── README.md                        ← you are here
+├── AGENTS.md                        ← Codex project instructions
 ├── registry/                        ← component registry split by category (canonical)
 │   ├── registry-index.json          ← lightweight index of all categories
 │   ├── registry-navigation.json     ← headers, nav items, nav drawer, breadcrumb, footer
@@ -42,8 +43,8 @@ design-system-page-builder/
 ### 1. Clone with submodule
 
 ```bash
-git clone --recursive git@github.com:zaida-umd/design-system-page-builder.git
-cd design-system-page-builder
+git clone --recursive git@github.com:JiayuKang0414/design-system-page-builder-codex.git
+cd design-system-page-builder-codex
 ```
 
 If you already cloned without `--recursive`:
@@ -63,19 +64,22 @@ git add design-system
 git commit -m "Update design-system submodule to latest"
 ```
 
-### 3. Claude project setup
+### 3. Codex setup
 
-Add these files as project knowledge in your Claude project:
-- `registry/registry-index.json` + individual category files
+Open the repository in Codex. Codex should read `AGENTS.md` first, then the relevant recipe in `.claude/commands/` for the task.
+
+Useful files for every page task:
+- `registry/registry-index.json` + relevant category files
 - `RULES.md`
 - `TEMPLATE.html`
+- `LAYOUT-PATTERNS.md`
 - `REQUIRED-CSS.md`
 
-The full `design-system/` directory is too large for project knowledge, but having it on disk means Claude (via Claude in Chrome or computer use) can inspect specific source files when investigating component behavior.
+The full `design-system/` directory is large, but having it on disk means Codex can inspect specific source files when investigating component behavior.
 
 ## How it works
 
-1. **Registry** (`registry/`) — Every component's tag name, slots, attributes, variants, and known gotchas, verified directly from the npm package source. Split into category files so Claude can read only the ones relevant to a given task.
+1. **Registry** (`registry/`) — Every component's tag name, slots, attributes, variants, and known gotchas, verified directly from the npm package source. Split into category files so Codex can read only the ones relevant to a given task.
 
 2. **Rules** (`RULES.md`) — Composition patterns, CSS requirements, spacing utilities, and hard-won lessons from testing. Covers critical CSS load order, `container-type` splits, pathway background requirements, theme cascade behavior, and more.
 

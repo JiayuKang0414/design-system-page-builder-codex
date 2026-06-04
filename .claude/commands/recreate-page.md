@@ -1,6 +1,6 @@
 # Recreate this page / convert this page to the design system
 
-Build a complete UMD landing page HTML file based on an existing page and save it to `/Users/zjocson/repos/design-system-page-builder/examples/`. Help identify the right UMD design system component for all components on a given piece of content or use case.
+Build a complete UMD landing page HTML file based on an existing page and save it to `examples/`. Help identify the right UMD design system component for all components on a given piece of content or use case.
 
 
 
@@ -14,9 +14,9 @@ Every page must open with these three elements, in this order, before any conten
 
 ## Step 1: Download source assets (subagent)
 
-Before doing any analysis or building, spawn a subagent to download the source page assets into `/Users/zjocson/repos/design-system-page-builder/tmp/`. The subagent should:
+Before doing any analysis or building, spawn a subagent to download the source page assets into `tmp/`. The subagent should:
 
-1. Create the directory `/Users/zjocson/repos/design-system-page-builder/tmp/` if it does not exist.
+1. Create the directory `tmp/` if it does not exist.
 2. Download the full HTML of the source URL and save it as `tmp/source.html`.
 3. Parse `tmp/source.html` and download all referenced assets:
    - Images (`<img src>`, `srcset`, CSS `background-image` URLs, `<picture><source srcset>`)
@@ -56,7 +56,7 @@ If a section on the source page has no DS-equivalent component and the user hasn
 
 This rule applies during the initial build *and* every later edit to a recreate-page output. When the user asks for a copy change without supplying the new text, ask for the verbatim string before editing.
 
-**Images:** Extract actual image paths from `tmp/source.html` — do not guess or construct URLs. For the generated page, copy the downloaded images from `tmp/assets/images/` into `/Users/zjocson/repos/design-system-page-builder/images/projects/{title}/` (where `{title}` matches the output filename, e.g. `images/projects/ischool/`) and reference them as repo-relative paths: `../images/projects/{title}/filename.jpg`. Videos go into `images/media/`.
+**Images:** Extract actual image paths from `tmp/source.html` — do not guess or construct URLs. For the generated page, copy the downloaded images from `tmp/assets/images/` into `images/projects/{title}/` (where `{title}` matches the output filename, e.g. `images/projects/ischool/`) and reference them as repo-relative paths: `../images/projects/{title}/filename.jpg`. Videos go into `images/media/`.
 
 
 ## Process
@@ -137,14 +137,14 @@ If an image was not downloaded (listed in `tmp/skipped-assets.txt` or absent fro
 
 ## Output
 
-Write the completed HTML file to `/Users/zjocson/repos/design-system-page-builder/examples/{title}.html`. Confirm the filename when done.
+Write the completed HTML file to `examples/{title}.html`. Confirm the filename when done.
 
 ## Cleanup
 
 After the output file is confirmed written, delete the `tmp/` directory:
 
 ```bash
-rm -rf /Users/zjocson/repos/design-system-page-builder/tmp
+rm -rf tmp
 ```
 
 ## Harvest overrides (final step)

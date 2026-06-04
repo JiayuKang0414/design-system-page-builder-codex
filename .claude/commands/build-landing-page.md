@@ -8,9 +8,9 @@ The user's `$ARGUMENTS` should describe: page topic/audience, key sections neede
 
 ## Optional reference page(s) step (skip if no URL reference)
 
-Before doing any analysis or building, spawn a subagent to download the source page assets into `/Users/zjocson/repos/design-system-page-builder/tmp/`. The subagent should:
+Before doing any analysis or building, spawn a subagent to download the source page assets into `tmp/`. The subagent should:
 
-1. Create the directory `/Users/zjocson/repos/design-system-page-builder/tmp/` if it does not exist.
+1. Create the directory `tmp/` if it does not exist.
 2. Download the full HTML of the source URL and save it as `tmp/source.html`.
 3. Parse `tmp/source.html` and download all referenced assets:
    - Images (`<img src>`, `srcset`, CSS `background-image` URLs, `<picture><source srcset>`)
@@ -85,13 +85,13 @@ No source page to download from — pull from the local library:
 
 ## Output
 
-Write the completed HTML file to `/Users/zjocson/repos/design-system-page-builder/examples/{slug}.html`. Confirm the filename when done. If a preview server is running, verify the page renders before reporting success.
+Write the completed HTML file to `examples/{slug}.html`. Confirm the filename when done. If a preview server is running, verify the page renders before reporting success.
 
 ## Cleanup
 
 After the output file is confirmed written, delete the `tmp/` directory:
 ```bash
-rm -rf /Users/zjocson/repos/design-system-page-builder/tmp
+rm -rf tmp
 ```
 
 ## Harvest overrides (final step)
