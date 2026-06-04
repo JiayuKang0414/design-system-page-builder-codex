@@ -15,15 +15,28 @@ The `.codex/recipes/` directory contains task recipes for this project. **Before
 | Recreate an existing page | `.codex/recipes/recreate-page.md` |
 | QA a component after a DS update | `.codex/recipes/qa-component.md` |
 
-**Do not build pages from scratch** when a command file covers the task. The command file defines the required sections, content source, file naming, image sources, spacing rules, and output path. Follow it exactly.
+**Do not build pages from scratch** when a recipe covers the task. The recipe defines the required sections, content source, file naming, image sources, spacing rules, and output path. Follow it exactly.
 
-To choose between the page-building commands:
-- **`/recreate-page <url>`** — convert a real existing page (downloads source assets first, mirrors structure).
-- **`/build-landing-page <brief>`** / **`/build-interior-page <brief>`** — fresh pages from a topic/audience brief; output to `examples/`.
-- **`/sample-landing-page`** / **`/sample-interior-page`** — fixed-recipe showcase pages (no brief, no inputs); output to `test/`. Use only for fixture/test work.
-- **`/qa-component <component-or-ticket>`** — focused component QA page for verifying a DS submodule update; output to `qa/`.
+## How To Use These Recipes
 
-The three brief- or URL-driven commands all run a final harvest step that updates `OVERRIDES.md` with any shadow injections or page-built classes the new page introduced. The `sample-*` and `qa-component` commands skip this step.
+You do not run these files in the terminal. They are instructions for Codex to read before it edits HTML.
+
+Open this repository in Codex and ask naturally:
+
+- "Use `.codex/recipes/recreate-page.md` to convert https://example.umd.edu/ into a UMD Design System page."
+- "Use `.codex/recipes/build-landing-page.md` to create a landing page about Quantum Research."
+- "Use `.codex/recipes/recommend-component.md` to choose the right component for a carousel with quotes."
+- "Use `.codex/recipes/evaluate-design.md` to review `examples/arhu.html`."
+
+Codex should then read the named recipe, load the relevant registry and rules files, create or edit the page, and verify it locally.
+
+To choose between the page-building recipes:
+- **`recreate-page.md`** — convert a real existing page, downloading source assets first and mirroring structure.
+- **`build-landing-page.md`** / **`build-interior-page.md`** — create fresh pages from a topic or audience brief; output to `examples/`.
+- **`sample-landing-page.md`** / **`sample-interior-page.md`** — fixed-recipe showcase pages; output to `test/`. Use only for fixture/test work.
+- **`qa-component.md`** — focused component QA page for verifying a DS submodule update; output to `qa/`.
+
+The three brief- or URL-driven recipes all run a final harvest step that updates `OVERRIDES.md` with any shadow injections or page-built classes the new page introduced. The `sample-*` and `qa-component` recipes skip this step.
 
 ## Output folder guide
 
@@ -39,8 +52,8 @@ Never write QA pages to `examples/` or `test/`, and never write demo/fixture pag
 
 Each file has a distinct role — don't duplicate rules across them. When a topic could fit two files, prefer the higher-priority one and reference it from the others.
 
-1. **`.codex/recipes/*.md`** — task instructions for each slash command. Check first.
-2. **`RULES.md`** — hard mechanical rules: required structure, slot names, attribute requirements, spacing classes, component-specific gotchas (things that fail silently or render wrong if violated). Build commands enforce these.
+1. **`.codex/recipes/*.md`** — task instructions for each page-building workflow. Check first.
+2. **`RULES.md`** — hard mechanical rules: required structure, slot names, attribute requirements, spacing classes, component-specific gotchas (things that fail silently or render wrong if violated). Build recipes enforce these.
 3. **`registry/`** — component slots and attributes verified from NPM. Source of truth for what a component accepts.
 4. **`styles/critical.css`** — **single source of truth for all CSS rules** (canonical file). When inlining into a page, copy verbatim — never trim "unused" rules. Animation/keyframe rules and feature-specific utilities pair with each other; dropping one silently breaks the related feature when used later (e.g. trimming `@keyframes slide-in-from-left` + `@supports (animation-timeline: scroll())` breaks every `.umd-watermark` animation).
 5. **`TEMPLATE.html`** — inlines `styles/critical.css` verbatim + HTML skeleton (copy `<head>` block verbatim).

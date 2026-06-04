@@ -18,6 +18,17 @@ For any page-building task, first check the recipe files in `.codex/recipes/`. T
 
 Treat the recipe as required workflow, not loose inspiration.
 
+## How To Use
+
+These files are not terminal commands. Ask Codex to use the recipe that matches your task, for example:
+
+- "Use `.codex/recipes/recreate-page.md` to convert https://example.umd.edu/ into a UMD Design System page."
+- "Use `.codex/recipes/build-landing-page.md` to create a landing page about Quantum Research."
+- "Use `.codex/recipes/recommend-component.md` to choose a component for this content."
+- "Use `.codex/recipes/evaluate-design.md` to review `examples/arhu.html`."
+
+Codex should read the recipe, then load the relevant registry, rules, layout patterns, and template files before editing.
+
 ## Source Of Truth
 
 Use this hierarchy when files disagree:

@@ -1,6 +1,6 @@
 # Evaluate a Page Design
 
-Review a proposed page plan for design problems **before any HTML is written**. Catch design mistakes — not enforce hard rules (those live in `RULES.md` and are checked by the build commands).
+Review a proposed page plan for design problems **before any HTML is written**. Catch design mistakes — not enforce hard rules (those live in `RULES.md` and are checked by the build recipes).
 
 ## Input
 
