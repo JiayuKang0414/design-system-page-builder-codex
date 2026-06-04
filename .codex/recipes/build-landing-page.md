@@ -73,7 +73,7 @@ Open with these three elements in this order:
 2. **Site utility header** — `<umd-element-utility-header></umd-element-utility-header>`
 3. **Site navigation header** — `<umd-element-navigation-header sticky class="umd-layout-space-horizontal-full">` with logo and nav items appropriate to the brief's site/department.
 
-Close with the visual footer (see CLAUDE.md §Logos and `/recreate-page` for the snippet).
+Close with the visual footer (see CODEX.md §Logos and `/recreate-page` for the snippet).
 
 ## Images
 

@@ -1,6 +1,6 @@
 # UMD Design System Page Builder
 
-A Codex-ready workflow for generating complete, valid HTML pages using the [UMD Design System](https://github.com/UMD-Digital/design-system) web components (`@universityofmaryland/web-components-library`). The original Claude recipes are preserved in `.claude/commands/`; Codex uses `AGENTS.md` as its main project guide.
+A Codex-ready workflow for generating complete, valid HTML pages using the [UMD Design System](https://github.com/UMD-Digital/design-system) web components (`@universityofmaryland/web-components-library`). Portable page-building recipes live in `.codex/recipes/`; Codex uses `AGENTS.md` as its main project guide.
 
 ## What this is
 
@@ -66,7 +66,7 @@ git commit -m "Update design-system submodule to latest"
 
 ### 3. Codex setup
 
-Open the repository in Codex. Codex should read `AGENTS.md` first, then the relevant recipe in `.claude/commands/` for the task.
+Open the repository in Codex. Codex should read `AGENTS.md` first, then the relevant recipe in `.codex/recipes/` for the task.
 
 Useful files for every page task:
 - `registry/registry-index.json` + relevant category files

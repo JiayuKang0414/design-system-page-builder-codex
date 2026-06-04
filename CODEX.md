@@ -1,19 +1,19 @@
-# Claude Code — Design System Page Builder
+# Codex — Design System Page Builder
 
-## Check commands before starting any work
+## Check Recipes Before Starting Any Work
 
-The `.claude/commands/` directory contains slash commands for this project. **Before writing any HTML page or doing any page-building task, check if a command exists for it.**
+The `.codex/recipes/` directory contains task recipes for this project. **Before writing any HTML page or doing any page-building task, check if a recipe exists for it.**
 
-| Task | Command file |
+| Task | Recipe file |
 |---|---|
-| Build a sample/test landing page (fixed recipe) | `.claude/commands/sample-landing-page.md` |
-| Build a sample/test interior page (fixed recipe) | `.claude/commands/sample-interior-page.md` |
-| Build a fresh landing page from a brief | `.claude/commands/build-landing-page.md` |
-| Build a fresh interior page from a brief | `.claude/commands/build-interior-page.md` |
-| Evaluate a design | `.claude/commands/evaluate-design.md` |
-| Recommend a component | `.claude/commands/recommend-component.md` |
-| Recreate an existing page | `.claude/commands/recreate-page.md` |
-| QA a component after a DS update | `.claude/commands/qa-component.md` |
+| Build a sample/test landing page (fixed recipe) | `.codex/recipes/sample-landing-page.md` |
+| Build a sample/test interior page (fixed recipe) | `.codex/recipes/sample-interior-page.md` |
+| Build a fresh landing page from a brief | `.codex/recipes/build-landing-page.md` |
+| Build a fresh interior page from a brief | `.codex/recipes/build-interior-page.md` |
+| Evaluate a design | `.codex/recipes/evaluate-design.md` |
+| Recommend a component | `.codex/recipes/recommend-component.md` |
+| Recreate an existing page | `.codex/recipes/recreate-page.md` |
+| QA a component after a DS update | `.codex/recipes/qa-component.md` |
 
 **Do not build pages from scratch** when a command file covers the task. The command file defines the required sections, content source, file naming, image sources, spacing rules, and output path. Follow it exactly.
 
@@ -39,13 +39,13 @@ Never write QA pages to `examples/` or `test/`, and never write demo/fixture pag
 
 Each file has a distinct role — don't duplicate rules across them. When a topic could fit two files, prefer the higher-priority one and reference it from the others.
 
-1. **`.claude/commands/*.md`** — task instructions for each slash command. Check first.
+1. **`.codex/recipes/*.md`** — task instructions for each slash command. Check first.
 2. **`RULES.md`** — hard mechanical rules: required structure, slot names, attribute requirements, spacing classes, component-specific gotchas (things that fail silently or render wrong if violated). Build commands enforce these.
 3. **`registry/`** — component slots and attributes verified from NPM. Source of truth for what a component accepts.
 4. **`styles/critical.css`** — **single source of truth for all CSS rules** (canonical file). When inlining into a page, copy verbatim — never trim "unused" rules. Animation/keyframe rules and feature-specific utilities pair with each other; dropping one silently breaks the related feature when used later (e.g. trimming `@keyframes slide-in-from-left` + `@supports (animation-timeline: scroll())` breaks every `.umd-watermark` animation).
 5. **`TEMPLATE.html`** — inlines `styles/critical.css` verbatim + HTML skeleton (copy `<head>` block verbatim).
 6. **`LAYOUT-PATTERNS.md`** — HTML pattern recipes for utility classes and multi-component layouts (rich text, masonry, grids, sticky columns, link-card grids). Reference, not enforcement.
-7. **`.claude/commands/evaluate-design.md`** — design-judgment checks for catching design mistakes (variety, rhythm, dark-theme overuse, watermark adjacency). Not a hard-rule enforcer; complements `RULES.md`.
+7. **`.codex/recipes/evaluate-design.md`** — design-judgment checks for catching design mistakes (variety, rhythm, dark-theme overuse, watermark adjacency). Not a hard-rule enforcer; complements `RULES.md`.
 8. **`OVERRIDES.md`** — page-specific deviations (shadow injections, page-built classes). Append-only log, not a rule source.
 9. **`REQUIRED-CSS.md`** — commentary on *why* each CSS rule group is needed (no CSS to copy).
 

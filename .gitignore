@@ -4,8 +4,8 @@
 # Dependencies
 node_modules/
 
-# Claude worktrees (ephemeral working directories)
-.claude/worktrees/
+# Codex worktrees or local scratch directories
+.codex/worktrees/
 
-# Claude local settings (machine-specific permission approvals, not for version control)
-.claude/settings.local.json
+# Codex local settings (machine-specific permission approvals, not for version control)
+.codex/settings.local.json

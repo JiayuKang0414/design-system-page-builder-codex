@@ -45,7 +45,7 @@ Use a content and images from https://gradschool.umd.edu/ as the fictional clien
 
 ## Image fallback
 
-See CLAUDE.md §Images for the full fallback lookup procedure.
+See CODEX.md §Images for the full fallback lookup procedure.
 
 ## Output
 

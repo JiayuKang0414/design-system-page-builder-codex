@@ -4,17 +4,17 @@ This repository builds standalone HTML pages with the University of Maryland Des
 
 ## Start Here
 
-For any page-building task, first check the recipe files in `.claude/commands/`. They are kept as portable task recipes even when using Codex.
+For any page-building task, first check the recipe files in `.codex/recipes/`. They are kept as portable task recipes even when using Codex.
 
 | Task | Recipe |
 |---|---|
-| Recreate an existing page from a URL | `.claude/commands/recreate-page.md` |
-| Build a fresh landing page from a brief | `.claude/commands/build-landing-page.md` |
-| Build a fresh interior page from a brief | `.claude/commands/build-interior-page.md` |
-| Evaluate a design | `.claude/commands/evaluate-design.md` |
-| Recommend a component | `.claude/commands/recommend-component.md` |
-| QA a component after a DS update | `.claude/commands/qa-component.md` |
-| Build fixed sample pages | `.claude/commands/sample-landing-page.md`, `.claude/commands/sample-interior-page.md` |
+| Recreate an existing page from a URL | `.codex/recipes/recreate-page.md` |
+| Build a fresh landing page from a brief | `.codex/recipes/build-landing-page.md` |
+| Build a fresh interior page from a brief | `.codex/recipes/build-interior-page.md` |
+| Evaluate a design | `.codex/recipes/evaluate-design.md` |
+| Recommend a component | `.codex/recipes/recommend-component.md` |
+| QA a component after a DS update | `.codex/recipes/qa-component.md` |
+| Build fixed sample pages | `.codex/recipes/sample-landing-page.md`, `.codex/recipes/sample-interior-page.md` |
 
 Treat the recipe as required workflow, not loose inspiration.
 
@@ -22,7 +22,7 @@ Treat the recipe as required workflow, not loose inspiration.
 
 Use this hierarchy when files disagree:
 
-1. `.claude/commands/*.md` for task workflow.
+1. `.codex/recipes/*.md` for task workflow.
 2. `RULES.md` for required markup, spacing, slots, attributes, themes, and component gotchas.
 3. `registry/` for verified component APIs.
 4. `styles/critical.css` for canonical CSS copied into standalone pages.
@@ -74,6 +74,6 @@ For visual QA, open the same URL in a browser and inspect desktop and mobile wid
 
 ## Git Hygiene
 
-This fork may keep `.claude/commands/` because they are useful portable recipes. Codex-specific behavior should live in `AGENTS.md` and repo docs.
+This fork may keep `.codex/recipes/` because they are useful portable recipes. Codex-specific behavior should live in `AGENTS.md` and repo docs.
 
 Do not commit `node_modules/`, `.DS_Store`, or temporary `tmp/` downloads.

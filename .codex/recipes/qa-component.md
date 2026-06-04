@@ -44,7 +44,7 @@ Follow the same shell structure as interior pages (`umd-element-navigation-utili
 For the **navigation header**, always include:
 - `sticky` attribute
 - `class="umd-layout-space-horizontal-full"`
-- Logo per CLAUDE.md logo rules
+- Logo per CODEX.md logo rules
 - At least three nav items with one having a dropdown sub-menu (tests mobile open/close and scroll)
 
 For the **footer**, use `data-display="visual"` with **no `slot="image"`** — QA pages omit the footer background image to keep the file focused on the components under test.
@@ -97,7 +97,7 @@ If a preview server is running, reload and verify the page renders. Take a scree
 - [ ] Navigation header has `sticky` + `umd-layout-space-horizontal-full` + dropdown sub-menu
 - [ ] Each test case section has a plain `<h2>` label above it
 - [ ] All images are local (`../images/…`) — no remote URLs
-- [ ] Logo fallbacks use `onerror` handler per CLAUDE.md
+- [ ] Logo fallbacks use `onerror` handler per CODEX.md
 - [ ] No custom CSS beyond the template `<head>` block
 - [ ] All component slots verified against registry
 - [ ] All applicable RULES.md sections checked

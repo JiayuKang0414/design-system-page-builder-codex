@@ -1305,7 +1305,7 @@ This applies to: standard pathway (no `data-display`), `data-display="hero"`, `d
 
 ## 25. Logo images — always use local fallbacks
 
-See **CLAUDE.md §Logos** for the header/footer fallback file paths. The core rule:
+See **CODEX.md §Logos** for the header/footer fallback file paths. The core rule:
 
 - **Footer logo:** Always use the local `../images/logos/footer-logo.svg`. Do not attempt external department logo URLs — they typically fail on the dark footer background (wrong color or hotlink-blocked).
 - **Header logo:** A department-specific external logo is acceptable only when you have confirmed the URL is accessible and renders on a dark background. When in doubt, use the local fallback.

@@ -127,13 +127,13 @@ Always use the visual footer:
 ```
 Do not add contact info, address, or social links — the visual variant renders the logo and image only. Do not use an external logo URL in the footer. The `slot="image"` `alt` must be non-empty — the visual footer's image renderer drops the slotted image entirely if `alt=""` (it does not fall back to the default).
 
-For `slot="logo"` in `umd-element-navigation-header`, use a confirmed accessible URL from the downloaded source. If unavailable or uncertain, fall back to `../images/logos/primary-logo-dark.svg`. When using an external URL, always add `onerror="this.onerror=null;this.src='../images/logos/primary-logo-dark.svg';"` to the `<img>` so hotlink-blocked logos swap to the local fallback at runtime — see CLAUDE.md §Logos.
+For `slot="logo"` in `umd-element-navigation-header`, use a confirmed accessible URL from the downloaded source. If unavailable or uncertain, fall back to `../images/logos/primary-logo-dark.svg`. When using an external URL, always add `onerror="this.onerror=null;this.src='../images/logos/primary-logo-dark.svg';"` to the `<img>` so hotlink-blocked logos swap to the local fallback at runtime — see CODEX.md §Logos.
 
 ## Image fallback
 
 Prefer images downloaded into `tmp/assets/images/` — these are already verified. Copy them to `images/projects/{title}/` and reference as repo-relative paths: `../images/projects/{title}/filename.jpg`. Copy any video files to `images/media/`.
 
-If an image was not downloaded (listed in `tmp/skipped-assets.txt` or absent from `tmp/assets/images/`), fall back to the library lookup in CLAUDE.md §Images.
+If an image was not downloaded (listed in `tmp/skipped-assets.txt` or absent from `tmp/assets/images/`), fall back to the library lookup in CODEX.md §Images.
 
 ## Output
 
