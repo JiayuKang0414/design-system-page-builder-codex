@@ -116,7 +116,7 @@ All four layout categories in `design-system/packages/styles/source/layout/` map
 | `layout/space/horizontal.ts` | `umd-layout-space-horizontal-*` |
 | `layout/space/vertical.ts` | `umd-layout-vertical-landing`, `umd-layout-vertical-landing-child`, `umd-layout-vertical-interior*` |
 | `layout/space/columns.ts` | `umd-layout-space-columns-left` |
-| `layout/grid/gap.ts` | `umd-layout-grid-gap-two`, `umd-layout-grid-gap-stacked` |
+| `layout/grid/gap.ts` | `umd-layout-grid-gap-two`, `umd-layout-grid-gap-three`, `umd-layout-grid-gap-four`, `umd-layout-grid-gap-stacked` |
 | `layout/grid/base.ts` | `umd-layout-grid-columns-four` |
 | `layout/grid/inline.ts` | `umd-layout-grid-inline-tablet-rows` |
 | `layout/grid/masonary.ts` | `umd-layout-grid-masonry` |

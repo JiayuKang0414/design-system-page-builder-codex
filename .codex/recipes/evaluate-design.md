@@ -48,6 +48,8 @@ Walk the plan against these design-judgment checks. Each is a *mistake to catch*
 - **Card-layout variety across multiple card sections.** When a page has more than one card-based section, do not use the same card type for all of them. Mix `umd-element-card` (standard), `umd-element-card-overlay type="image"`, `umd-element-card-overlay` (no image, link-style), `umd-element-card-icon`, and masonry grids so each section reads as visually distinct. Two consecutive sections of standard cards is the most common offender — convert one to image-overlay or masonry. If the page already has imageless overlay cards, prefer image-overlay (not another standard set) for the next card section.
 - **Duplicate card-overlay CTA rows.** When `umd-element-card-overlay` is used to replace a row of standalone CTAs or navigation links — no images, no body copy in the original — and that pattern appears twice on the page, flag it as repetitive. Differentiate the secondary set by converting to `umd-element-card-icon`. Use `icon-link.svg` for internal links, `icon-new-window.svg` for external; use `-dark` icon variants on `data-theme="dark"` cards. Reserve `umd-element-card-overlay` for the set where the content is richer or more featured.
 - **Standalone link rows → card-overlay.** If a section contains only 2–4 standalone navigation links with no supporting body copy, use `umd-element-card-overlay` (no image, with `slot="cta-icon"`) in a grid instead of secondary CTAs in `umd-layout-grid-inline-tablet-rows`. See `LAYOUT-PATTERNS.md` "Link Cards Grid" section.
+- **Standard card grid internal spacing.** For program/news/navigation grids using `umd-element-card`, flag bare `umd-layout-grid-columns-*` wrappers. Use `umd-layout-grid-gap-two/three/four` so the card-to-card gap is explicit (RULES.md §31).
+- **Source carousel completeness.** For recreated pages, compare the output carousel against the source slide count and order. If the source mixes image cards and non-image/text cards, flag dropped text-only slides or reordered cards. Use no-image `umd-element-card-overlay data-theme="dark"` for text-only slides inside card carousels (RULES.md §27).
 - **Section rhythm.** A landing page should rotate through full-bleed, narrow, wide treatments. Penalize three consecutive sections that share the same width and treatment.
 
 ### Dark theming and visual weight
@@ -93,6 +95,8 @@ Any component-specific rule that fails silently or produces broken output is a h
 - `umd-layout-image-expand` text color and quote transparency — `RULES.md §17`
 - Footer visual variant non-empty `alt` — `RULES.md §29`
 - Standard card `data-visual-image-aligned="true"` default — `RULES.md §30`
+- Standard card grid internal spacing — `RULES.md §31`
+- Card carousel mixed image/text slide preservation — `RULES.md §27`
 - Section-intro + masonry compensation CSS — `LAYOUT-PATTERNS.md` "Masonry compensation rule"
 
 Flag any others you spot during planning that aren't yet documented — those are candidates for promotion into `RULES.md`.

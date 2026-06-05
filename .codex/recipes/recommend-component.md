@@ -36,7 +36,9 @@ Help identify the right UMD design system component for a given piece of content
 | Page title / section header bar | `umd-element-hero-minimal` |
 | Split image + text feature | `umd-element-pathway` (`data-display="overlay"` for standalone, standard for dark-section use) |
 | Stats / metrics | `umd-element-stat` with grid wrapper |
-| News/story cards | `umd-element-card` (standard) or `umd-element-card-overlay` (type="image" for photo bg) |
+| Program/navigation cards | `umd-element-card` in `umd-layout-grid-gap-two/three/four` — standard card grid with explicit internal gap |
+| News/story cards | `umd-element-card` (standard) or `umd-element-card-overlay` (`type="image"` for photo bg). In `umd-element-carousel-cards`, keep source text-only cards as no-image overlay cards instead of dropping them. |
+| Row of card carousel slides | `umd-element-carousel-cards` with dark standard cards or dark overlay cards; preserve source order and mixed image/text card types |
 | Section heading + CTA | `umd-element-section-intro` (centered) or `umd-element-section-intro-wide` (with watermark) |
 | Pull quote / testimonial | `umd-element-quote` wrapped in `umd-layout-space-horizontal-normal`; `data-display="featured"` for large format |
 | Quote + editorial body copy | `umd-element-pathway-highlight` — only when real body copy exists alongside the quote; quote-only → use `umd-element-quote` |
@@ -52,3 +54,5 @@ Help identify the right UMD design system component for a given piece of content
 ## Output format
 
 Lead with the **primary recommendation** and a one-line rationale. Then show the code example. If there are strong alternatives, list them after with a brief "vs" comparison. Keep it concise — the user can ask to go deeper on any option.
+
+When recommending a card grid, include the wrapper class (`umd-layout-grid-gap-two/three/four`) in the example so the internal card spacing is explicit. When recommending `umd-element-section-intro-wide` above a grid/list/feed, show it inside `<div class="umd-layout-vertical-landing-child">`.

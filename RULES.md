@@ -375,6 +375,8 @@ A section intro or section header **always** needs `umd-layout-vertical-landing-
 
 This rule applies whether the content that follows is a card grid, a feed component (`umd-feed-news`, `umd-feed-news-list`, `umd-feed-news-featured`), CTA buttons, or any other content block.
 
+When recreating a page, apply this rule after later edits too. If a section intro is added, moved, or converted from carousel/list content to a card grid, re-check that the child spacing wrapper still sits between `umd-element-section-intro-wide` and the following content.
+
 ### Note on pathway sections
 
 Pathway and hero components manage their own internal spacing. When wrapping a pathway in a dark `<section>`, apply `umd-layout-vertical-landing` to the `<section>` element, not to the component itself. The section's `margin-bottom` creates the gap to the next section.
@@ -1351,9 +1353,12 @@ The carousel ships its own dark SVG-textured background, so slotted cards must b
 | Card | When to use |
 |---|---|
 | `umd-element-card` with `data-theme="dark"` | Standard text + image card on the dark texture. Use when each card has body copy beyond the headline. |
-| `umd-element-card-overlay data-theme="dark"` | Image-overlay card. Use when each card is primarily image-driven and the headline overlays the image. |
+| `umd-element-card-overlay type="image" data-theme="dark"` | Image-overlay card. Use when each card is primarily image-driven and the headline overlays the image. |
+| `umd-element-card-overlay data-theme="dark"` | Text-only carousel card. Use when the source carousel has a non-image card/slide; do not drop it or invent an image. |
 
 Do **not** use light-theme standard cards — they render a white block on the dark texture.
+
+When recreating an existing page, match the source slide count and order. Many source carousels mix image cards with non-image/stat/navigation cards. Preserve that mix inside the DS carousel.
 
 ```html
 <!-- ✓ Standard dark cards -->
@@ -1368,12 +1373,25 @@ Do **not** use light-theme standard cards — they render a white block on the d
   </div>
 </umd-element-carousel-cards>
 
-<!-- ✓ Image-overlay cards -->
+<!-- ✓ Mixed source carousel: image-overlay cards + text-only cards -->
 <umd-element-carousel-cards>
   <div slot="cards">
+    <umd-element-card-overlay type="image" data-theme="dark">
+      <img slot="image" src="/img.jpg" alt="…" />
+      <h3 slot="headline"><a href="/story">Story headline</a></h3>
+      <div slot="actions">
+        <umd-element-call-to-action data-display="secondary" data-theme="dark">
+          <a href="/story">Read More</a>
+        </umd-element-call-to-action>
+      </div>
+    </umd-element-card-overlay>
     <umd-element-card-overlay data-theme="dark">
-      <p slot="headline"><a href="/x"><span>Title</span></a></p>
-      <div slot="text"><p>Supporting copy.</p></div>
+      <h3 slot="headline"><a href="/stat">7 research centers advancing solutions</a></h3>
+      <div slot="actions">
+        <umd-element-call-to-action data-display="secondary" data-theme="dark">
+          <a href="/stat">Learn More</a>
+        </umd-element-call-to-action>
+      </div>
     </umd-element-card-overlay>
   </div>
 </umd-element-carousel-cards>
@@ -1486,7 +1504,35 @@ This default does not apply to:
 
 ---
 
-## 31. Section-intro — text-only variant for body sentences
+## 31. Standard card grids use `umd-layout-grid-gap-*`, not bare column grids
+
+For standard card grids, use the gap grid utilities so card-to-card spacing is explicit:
+
+| Card count / layout | Grid class |
+|---|---|
+| 2 columns | `umd-layout-grid-gap-two` |
+| 3 columns | `umd-layout-grid-gap-three` |
+| 4 columns | `umd-layout-grid-gap-four` |
+| 4 columns with extra high-def breathing room | `umd-layout-grid-gap-four-large` |
+
+`umd-layout-grid-columns-four` is only a column-count utility. It sets responsive columns, but it is not the preferred standard card grid wrapper because the internal card gap is not explicit across all larger breakpoints. For a four-card program/navigation/news grid, prefer:
+
+```html
+<div class="umd-layout-grid-gap-four">
+  <umd-element-card>...</umd-element-card>
+  <umd-element-card>...</umd-element-card>
+  <umd-element-card>...</umd-element-card>
+  <umd-element-card>...</umd-element-card>
+</div>
+```
+
+For image-overlay grids, `umd-layout-grid-columns-four` can still be used when the visual goal is a tighter wall of overlay tiles. For standard cards, reach for `umd-layout-grid-gap-*` first.
+
+Source: `design-system/packages/styles/source/layout/grid/gap.ts` sets `umd-layout-grid-gap-four`; `design-system/packages/styles/source/layout/grid/base.ts` sets the bare `umd-layout-grid-columns-four` column behavior.
+
+---
+
+## 32. Section-intro — text-only variant for body sentences
 
 `umd-element-section-intro` has a built-in "text-only" treatment: when only `slot="text"` is provided (no `slot="headline"`), the component automatically renders the text larger and bolder. This is the right component for a long body sentence that functions as a section's lede with no separate title above it.
 
@@ -1513,7 +1559,7 @@ Do **not** force a body sentence into `<h2 slot="headline">` to "fill" the headl
 
 ---
 
-## 32. Landing-page accordion stack
+## 33. Landing-page accordion stack
 
 A vertical stack of `umd-element-accordion-item` siblings on a landing page uses two specific layout choices.
 
@@ -1541,7 +1587,7 @@ A vertical stack of `umd-element-accordion-item` siblings on a landing page uses
 
 Why narrow: accordion bodies are text-list-heavy and read better at a constrained measure. `-larger`/`-normal` produce overly wide rows that scan poorly. Why 8px: `--umd-space-min` is the DS token for the smallest spacing step (verified in `tokens.min.css`). The default `umd-layout-grid-gap-stacked` (24px+) puts too much air between collapsed accordion headers.
 
-## 33. Inline link styling — always use the gradient underline pattern
+## 34. Inline link styling — always use the gradient underline pattern
 
 When writing page-built CSS for inline `<a>` links inside body copy, AI summaries, custom content divs, or any non-component text area, **never use `text-decoration: underline` or a custom `color`**. Always copy the `umd-text-rich-advanced a` gradient underline pattern from `LAYOUT-PATTERNS.md` (or from `styles/critical.css`):
 

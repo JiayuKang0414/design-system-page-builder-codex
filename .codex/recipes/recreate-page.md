@@ -68,8 +68,8 @@ This rule applies during the initial build *and* every later edit to a recreate-
    - Are there constraints? (must have image, needs a CTA, has a lot of text, etc.)
 
 2. **Inventory carousels and side navigation in the source** — before mapping content to components, scan the source for these two patterns specifically:
-   - **Carousels / sliders** (Slick, Owl, Revolution, Gavias slider-layer, Swiper, etc. — often `<ul>`/`<div>` with `data-` attributes for animation). If the source uses a carousel for a content set, recreate it with the matching DS carousel — do **not** flatten to a grid. Mapping: image slider → `umd-element-carousel-image-wide` or `-image`; thumbnail-driven people/photo carousel → `umd-element-carousel-thumbnail`; row of cards → `umd-element-carousel-cards`. Flattening a carousel to a grid changes the page rhythm and over-emphasizes content the source intentionally treated as supplementary.
-   - **Side / left-rail navigation.** Many CMS templates render a sub-section nav rail. Don't drop it. Recreate it as `umd-element-accordion-item` groups near the bottom of the page — one accordion per natural parent section — unless the user directs otherwise. See `LAYOUT-PATTERNS.md` "Side Navigation as Accordion Stack" and `RULES.md §32` for the wrap and gap.
+   - **Carousels / sliders** (Slick, Owl, Revolution, Gavias slider-layer, Swiper, etc. — often `<ul>`/`<div>` with `data-` attributes for animation). If the source uses a carousel for a content set, recreate it with the matching DS carousel — do **not** flatten to a grid. Mapping: image slider → `umd-element-carousel-image-wide` or `-image`; thumbnail-driven people/photo carousel → `umd-element-carousel-thumbnail`; row of cards → `umd-element-carousel-cards`. Flattening a carousel to a grid changes the page rhythm and over-emphasizes content the source intentionally treated as supplementary. Preserve the source slide count and order, including mixed image and non-image/text-only cards. For card carousels, use `umd-element-card-overlay type="image" data-theme="dark"` for image-driven cards and `umd-element-card-overlay data-theme="dark"` without `type`/`slot="image"` for source text-only cards (RULES.md §27).
+   - **Side / left-rail navigation.** Many CMS templates render a sub-section nav rail. Don't drop it. Recreate it as `umd-element-accordion-item` groups near the bottom of the page — one accordion per natural parent section — unless the user directs otherwise. See `LAYOUT-PATTERNS.md` "Side Navigation as Accordion Stack" and `RULES.md §33` for the wrap and gap.
 
 3. **Match to registry** — scan the registry for candidates and narrow to the best option.
 
@@ -112,6 +112,8 @@ This rule applies during the initial build *and* every later edit to a recreate-
 - Every top-level `<section>` gets `class="umd-layout-vertical-landing"` — **except** dark sections that are immediately followed by another dark section. Omit `umd-layout-vertical-landing` from preceding dark sections to avoid a white gap; only the final dark section in the group carries it.
 - Pathway and hero are full-bleed — do NOT wrap in a horizontal spacing class.
 - Card grids and section intros go inside a `umd-layout-space-horizontal-larger` wrapper.
+- Standard card grids use `umd-layout-grid-gap-two/three/four` for internal card spacing, not bare `umd-layout-grid-columns-*` wrappers (RULES.md §31).
+- `umd-element-section-intro-wide` needs a wrapper `<div class="umd-layout-vertical-landing-child">` before any following grid/list/feed content (RULES.md §10).
 - `umd-element-quote` uses `umd-layout-space-horizontal-normal` (1280px) — not `larger` (RULES.md §12).
 - `data-theme` does not cascade — set it on every child component that needs it (RULES.md §14).
 - `umd-element-pathway-highlight` requires real body copy in `slot="text"`. If the source has only a quote and attribution, use `umd-element-quote` instead (RULES.md §5).

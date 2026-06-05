@@ -62,6 +62,8 @@ Same rules as `/recreate-page`:
 - Every top-level `<section>` gets `class="umd-layout-vertical-landing"` — except dark sections immediately followed by another dark section (see `RULES.md §19`).
 - Pathway and hero are full-bleed — do NOT wrap in a horizontal spacing class.
 - Card grids and section intros go inside a `umd-layout-space-horizontal-larger` wrapper.
+- Standard card grids use `umd-layout-grid-gap-two/three/four` for internal card spacing, not bare `umd-layout-grid-columns-*` wrappers.
+- `umd-element-section-intro-wide` needs a wrapper `<div class="umd-layout-vertical-landing-child">` before any following grid/list/feed content.
 - `umd-element-quote` uses `umd-layout-space-horizontal-normal` (1280px).
 - All other layout/component rules: see `RULES.md` (theming, slot patterns, spacing, component-specific gotchas).
 - Run the design-judgment checks in `/evaluate-design` Step 3 against the plan before writing HTML.
