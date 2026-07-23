@@ -8,6 +8,7 @@ For any page-building task, first check the recipe files in `.codex/recipes/`. T
 
 | Task | Recipe |
 |---|---|
+| Plan a page from a brief or raw content | `.codex/recipes/plan-page.md` |
 | Recreate an existing page from a URL | `.codex/recipes/recreate-page.md` |
 | Build a fresh landing page from a brief | `.codex/recipes/build-landing-page.md` |
 | Build a fresh interior page from a brief | `.codex/recipes/build-interior-page.md` |
@@ -23,6 +24,7 @@ Treat the recipe as required workflow, not loose inspiration.
 These files are not terminal commands. Ask Codex to use the recipe that matches your task, for example:
 
 - "Use `.codex/recipes/recreate-page.md` to convert https://example.umd.edu/ into a UMD Design System page."
+- "Use `.codex/recipes/plan-page.md` to structure this raw content and build the right page type."
 - "Use `.codex/recipes/build-landing-page.md` to create a landing page about Quantum Research."
 - "Use `.codex/recipes/recommend-component.md` to choose a component for this content."
 - "Use `.codex/recipes/evaluate-design.md` to review `examples/arhu.html`."
@@ -60,6 +62,7 @@ If a recipe mentions an absolute path from an older machine, translate it to the
 
 - Start every complete page from `TEMPLATE.html`.
 - Preserve the full inline CSS and CDN script order from the template.
+- Keep shared behavior in `scripts/` and reference it from pages; do not paste shared scripts inline.
 - Every top-level landing section normally uses `class="umd-layout-vertical-landing"`.
 - Full-bleed components such as hero and pathway should not be wrapped in horizontal spacing utilities.
 - Set `data-theme` on each component that needs it. Theme does not cascade through shadow DOM.

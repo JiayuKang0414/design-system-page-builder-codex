@@ -10,7 +10,7 @@ Build a focused QA test page for a specific design system component or component
 
 **Output:** `qa/{slug}.html` — where `{slug}` is the ticket ID if provided, otherwise a kebab-case component or combination name.
 
-This command does NOT take a brief and does NOT run a harvest step. For building real pages, use `/build-landing-page` or `/build-interior-page` instead.
+This recipe does NOT take a brief and does NOT run a harvest step. For building real pages, use `build-landing-page.md` or `build-interior-page.md` instead.
 
 ---
 

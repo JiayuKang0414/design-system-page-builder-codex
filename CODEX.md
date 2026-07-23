@@ -1,11 +1,12 @@
 # Codex — Design System Page Builder
 
-## Check Recipes Before Starting Any Work
+## Check recipes before starting any work
 
-The `.codex/recipes/` directory contains task recipes for this project. **Before writing any HTML page or doing any page-building task, check if a recipe exists for it.**
+The `.codex/recipes/` directory contains portable task recipes for this project. **Before writing any HTML page or doing any page-building task, check whether a recipe covers it.**
 
 | Task | Recipe file |
 |---|---|
+| Plan a page from a brief **or raw content** (front door) | `.codex/recipes/plan-page.md` |
 | Build a sample/test landing page (fixed recipe) | `.codex/recipes/sample-landing-page.md` |
 | Build a sample/test interior page (fixed recipe) | `.codex/recipes/sample-interior-page.md` |
 | Build a fresh landing page from a brief | `.codex/recipes/build-landing-page.md` |
@@ -17,34 +18,22 @@ The `.codex/recipes/` directory contains task recipes for this project. **Before
 
 **Do not build pages from scratch** when a recipe covers the task. The recipe defines the required sections, content source, file naming, image sources, spacing rules, and output path. Follow it exactly.
 
-## How To Use These Recipes
-
-You do not run these files in the terminal. They are instructions for Codex to read before it edits HTML.
-
-Open this repository in Codex and ask naturally:
-
-- "Use `.codex/recipes/recreate-page.md` to convert https://example.umd.edu/ into a UMD Design System page."
-- "Use `.codex/recipes/build-landing-page.md` to create a landing page about Quantum Research."
-- "Use `.codex/recipes/recommend-component.md` to choose the right component for a carousel with quotes."
-- "Use `.codex/recipes/evaluate-design.md` to review `examples/arhu.html`."
-
-Codex should then read the named recipe, load the relevant registry and rules files, create or edit the page, and verify it locally.
-
 To choose between the page-building recipes:
-- **`recreate-page.md`** — convert a real existing page, downloading source assets first and mirroring structure.
-- **`build-landing-page.md`** / **`build-interior-page.md`** — create fresh pages from a topic or audience brief; output to `examples/`.
-- **`sample-landing-page.md`** / **`sample-interior-page.md`** — fixed-recipe showcase pages; output to `test/`. Use only for fixture/test work.
-- **`qa-component.md`** — focused component QA page for verifying a DS submodule update; output to `qa/`.
+- **`plan-page.md`** — the **front door** when you have content (or a topic) but not a finished plan. It detects brief vs raw content, surveys the site (existing) or peers (new) for visual tone, derives an ordered **Page Plan** (sections → components, copy source, image source), self-validates against `evaluate-design.md`, then hands off to `build-landing-page.md` or `build-interior-page.md`.
+- **`build-landing-page.md`** / **`build-interior-page.md`** — render a page. The preferred path is Page Plan mode; both also accept a raw brief directly for simple pages. Output goes to `examples/`.
+- **`recreate-page.md`** — convert a real existing page, downloading source assets first and mirroring its structure.
+- **`sample-landing-page.md`** / **`sample-interior-page.md`** — fixed-recipe showcase pages; output to `test/`.
+- **`qa-component.md`** — focused component QA page for verifying a Design System submodule update; output to `qa/`.
 
-The three brief- or URL-driven recipes all run a final harvest step that updates `OVERRIDES.md` with any shadow injections or page-built classes the new page introduced. The `sample-*` and `qa-component` recipes skip this step.
+`plan-page.md` plans but does not render or harvest; it delegates both to a build recipe. The build and URL-driven recipes run a final harvest step that updates `OVERRIDES.md` with any shadow injections or page-built classes the new page introduced. The sample and QA recipes skip this step.
 
 ## Output folder guide
 
 | Folder | What lives here | Written by |
 |---|---|---|
-| `examples/` | Realistic pages built from briefs or real URLs — for demos and client review | `/build-landing-page`, `/build-interior-page`, `/recreate-page` |
-| `test/` | Fixed-recipe fixture pages — for validating the page builder itself | `/sample-landing-page`, `/sample-interior-page` |
-| `qa/` | Isolated component test pages — for visually verifying DS submodule updates | `/qa-component` |
+| `examples/` | Realistic pages built from briefs or real URLs — for demos and client review | build/recreate recipes |
+| `test/` | Fixed-recipe fixture pages — for validating the page builder itself | sample recipes |
+| `qa/` | Isolated component test pages — for visually verifying DS submodule updates | QA recipe |
 
 Never write QA pages to `examples/` or `test/`, and never write demo/fixture pages to `qa/`.
 
@@ -52,11 +41,11 @@ Never write QA pages to `examples/` or `test/`, and never write demo/fixture pag
 
 Each file has a distinct role — don't duplicate rules across them. When a topic could fit two files, prefer the higher-priority one and reference it from the others.
 
-1. **`.codex/recipes/*.md`** — task instructions for each page-building workflow. Check first.
-2. **`RULES.md`** — hard mechanical rules: required structure, slot names, attribute requirements, spacing classes, component-specific gotchas (things that fail silently or render wrong if violated). Build recipes enforce these.
+1. **`.codex/recipes/*.md`** — task instructions for each workflow. Check first.
+2. **`RULES.md`** — hard mechanical rules: required structure, slot names, attribute requirements, spacing classes, component-specific gotchas (things that fail silently or render wrong if violated). Build commands enforce these.
 3. **`registry/`** — component slots and attributes verified from NPM. Source of truth for what a component accepts.
 4. **`styles/critical.css`** — **single source of truth for all CSS rules** (canonical file). When inlining into a page, copy verbatim — never trim "unused" rules. Animation/keyframe rules and feature-specific utilities pair with each other; dropping one silently breaks the related feature when used later (e.g. trimming `@keyframes slide-in-from-left` + `@supports (animation-timeline: scroll())` breaks every `.umd-watermark` animation).
-5. **`TEMPLATE.html`** — inlines `styles/critical.css` verbatim + HTML skeleton (copy `<head>` block verbatim).
+5. **`TEMPLATE.html`** — inlines `styles/critical.css` verbatim + HTML skeleton (copy `<head>` block verbatim). End-of-body scripts live in `scripts/` (`grid-animations.js`, `filter-band.js`) and are referenced by `src` — **never paste them inline into pages**; from an `examples/` page the path is `../scripts/<name>.js`.
 6. **`LAYOUT-PATTERNS.md`** — HTML pattern recipes for utility classes and multi-component layouts (rich text, masonry, grids, sticky columns, link-card grids). Reference, not enforcement.
 7. **`.codex/recipes/evaluate-design.md`** — design-judgment checks for catching design mistakes (variety, rhythm, dark-theme overuse, watermark adjacency). Not a hard-rule enforcer; complements `RULES.md`.
 8. **`OVERRIDES.md`** — page-specific deviations (shadow injections, page-built classes). Append-only log, not a rule source.
@@ -116,7 +105,7 @@ All four layout categories in `design-system/packages/styles/source/layout/` map
 | `layout/space/horizontal.ts` | `umd-layout-space-horizontal-*` |
 | `layout/space/vertical.ts` | `umd-layout-vertical-landing`, `umd-layout-vertical-landing-child`, `umd-layout-vertical-interior*` |
 | `layout/space/columns.ts` | `umd-layout-space-columns-left` |
-| `layout/grid/gap.ts` | `umd-layout-grid-gap-two`, `umd-layout-grid-gap-three`, `umd-layout-grid-gap-four`, `umd-layout-grid-gap-stacked` |
+| `layout/grid/gap.ts` | `umd-layout-grid-gap-two`, `umd-layout-grid-gap-stacked` |
 | `layout/grid/base.ts` | `umd-layout-grid-columns-four` |
 | `layout/grid/inline.ts` | `umd-layout-grid-inline-tablet-rows` |
 | `layout/grid/masonary.ts` | `umd-layout-grid-masonry` |

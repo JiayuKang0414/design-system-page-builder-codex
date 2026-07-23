@@ -14,6 +14,7 @@ Feed page content or a site URL into Codex and get back a complete, standards-co
 design-system-page-builder/
 ├── README.md                        ← you are here
 ├── AGENTS.md                        ← Codex project instructions
+├── .codex/recipes/                  ← Codex page-planning, building, evaluation, and QA workflows
 ├── registry/                        ← component registry split by category (canonical)
 │   ├── registry-index.json          ← lightweight index of all categories
 │   ├── registry-navigation.json     ← headers, nav items, nav drawer, breadcrumb, footer
@@ -83,9 +84,11 @@ The full `design-system/` directory is large, but having it on disk means Codex 
 
 2. **Rules** (`RULES.md`) — Composition patterns, CSS requirements, spacing utilities, and hard-won lessons from testing. Covers critical CSS load order, `container-type` splits, pathway background requirements, theme cascade behavior, and more.
 
-3. **Template** (`TEMPLATE.html`) — A complete page skeleton with all required CSS pre-assembled. Copy it, fill in the content sections, and you have a working page.
+3. **Recipes** (`.codex/recipes/`) — Planning, building, recreation, evaluation, recommendation, and QA workflows adapted for Codex.
 
-4. **CSS Reference** (`REQUIRED-CSS.md`) — Documents every CSS rule in the template: what it does, why it's needed, and what breaks without it.
+4. **Template** (`TEMPLATE.html`) — A complete page skeleton with all required CSS and shared script references pre-assembled.
+
+5. **CSS Reference** (`REQUIRED-CSS.md`) — Documents every CSS rule in the template: what it does, why it's needed, and what breaks without it.
 
 ## Key principles
 

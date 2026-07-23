@@ -36,33 +36,55 @@ If the hero is dark **and** the first content section is also a full dark sectio
 
 Two-column staggered layout. Odd children are offset upward, even children are pushed down, creating a visual zigzag. Stacks to a single column on mobile.
 
-**When to use:** 4 image-overlay cards on landing pages. Works especially well when cards have equal dimensions and strong images.
+**Lock:** `umd-layout-space-horizontal-normal` (1280px).
+
+**When to use:** 2–4 overlay cards or person bio components on landing pages. Works especially well when cards have equal dimensions and strong images. Commonly used with 4 cards (fills both columns evenly) but 2 cards is valid.
 
 **When NOT to use:** Mixed content types, lists, or cards where visual hierarchy matters — use `umd-layout-grid-gap-two` for plain two-column grids.
 
 ```html
 <!-- 4 overlay cards in staggered masonry -->
-<div class="umd-layout-grid-masonry">
-  <umd-element-card-overlay type="image">
-    <img slot="image" src="/img1.jpg" alt="" />
-    <h2 slot="headline"><a href="/research">Research</a></h2>
-    <p slot="text">Body copy.</p>
-  </umd-element-card-overlay>
-  <umd-element-card-overlay type="image">
-    <img slot="image" src="/img2.jpg" alt="" />
-    <h2 slot="headline"><a href="/academics">Academics</a></h2>
-    <p slot="text">Body copy.</p>
-  </umd-element-card-overlay>
-  <umd-element-card-overlay type="image">
-    <img slot="image" src="/img3.jpg" alt="" />
-    <h2 slot="headline"><a href="/partners">Partners</a></h2>
-    <p slot="text">Body copy.</p>
-  </umd-element-card-overlay>
-  <umd-element-card-overlay type="image">
-    <img slot="image" src="/img4.jpg" alt="" />
-    <h2 slot="headline"><a href="/alumni">Alumni</a></h2>
-    <p slot="text">Body copy.</p>
-  </umd-element-card-overlay>
+<div class="umd-layout-space-horizontal-normal">
+  <div class="umd-layout-grid-masonry">
+    <umd-element-card-overlay type="image">
+      <img slot="image" src="/img1.jpg" alt="" />
+      <h2 slot="headline"><a href="/research">Research</a></h2>
+      <p slot="text">Body copy.</p>
+    </umd-element-card-overlay>
+    <umd-element-card-overlay type="image">
+      <img slot="image" src="/img2.jpg" alt="" />
+      <h2 slot="headline"><a href="/academics">Academics</a></h2>
+      <p slot="text">Body copy.</p>
+    </umd-element-card-overlay>
+    <umd-element-card-overlay type="image">
+      <img slot="image" src="/img3.jpg" alt="" />
+      <h2 slot="headline"><a href="/partners">Partners</a></h2>
+      <p slot="text">Body copy.</p>
+    </umd-element-card-overlay>
+    <umd-element-card-overlay type="image">
+      <img slot="image" src="/img4.jpg" alt="" />
+      <h2 slot="headline"><a href="/alumni">Alumni</a></h2>
+      <p slot="text">Body copy.</p>
+    </umd-element-card-overlay>
+  </div>
+</div>
+
+<!-- 2 person bio components in staggered masonry -->
+<div class="umd-layout-space-horizontal-normal">
+  <div class="umd-layout-grid-masonry">
+    <umd-element-person-bio>
+      <img slot="image" src="…" alt="…" />
+      <p slot="name">Full Name</p>
+      <p slot="job-title">Title</p>
+      <div slot="description"><p>Bio text.</p></div>
+    </umd-element-person-bio>
+    <umd-element-person-bio>
+      <img slot="image" src="…" alt="…" />
+      <p slot="name">Full Name</p>
+      <p slot="job-title">Title</p>
+      <div slot="description"><p>Bio text.</p></div>
+    </umd-element-person-bio>
+  </div>
 </div>
 ```
 
@@ -88,9 +110,186 @@ Add per-page CSS to set card height (the stagger depends on cards having a defin
 
 ---
 
+## Overlay-Card Grids — gap vs. no-gap, and `size-large`
+
+Two independent choices when laying out a grid of `umd-element-card-overlay type="image"` cards.
+
+### Grid gap vs. no-gap
+
+Both families are provided by `layout.min.css` (CDN). Pick by whether the cards should read as **one mosaic** or **separate tiles** — do **not** hand-roll a no-gap grid class (e.g. a page-local `.umd-layout-grid-cards-no-gap`), which just duplicates `umd-layout-grid-columns-*`.
+
+| Class family | Gap | Use when |
+|---|---|---|
+| `umd-layout-grid-columns-two` / `-three` / `-four` | **No gap** — cells butt edge-to-edge (tablet+) | Image-overlay cards meant to read as one continuous photo wall. Shared edges reinforce the grid as a single unit. |
+| `umd-layout-grid-gap-two` / `-three` / `-stacked` | **32px** (gap-two widens to 40px at 1024px) | Cards that should read as discrete, separated objects — standard cards, mixed content, anything where each card is its own tile. |
+
+### Card height — `size-large`
+
+`umd-element-card-overlay.size-large` (shipped by `web-components.min.css`) raises the card min-height to **320px → 560px (768px+)**. Add `class="size-large"` to each card host — **no per-page CSS needed**.
+
+- Use it when overlay cards are the **primary visual** of a section (e.g. a 2-up principles grid) and the default height crops the image too tightly.
+- Skip it for compact card rows or cards carrying little imagery.
+- **Not for masonry** — the staggered masonry layout needs an explicit `min-height` (see the masonry note above) because the stagger depends on a defined height. `size-large` and masonry are not combined.
+
+```html
+<!-- No-gap 2-up overlay mosaic, each card size-large -->
+<div class="umd-layout-space-horizontal-larger">
+  <div class="umd-layout-grid-columns-two umd-animation-grid">
+    <umd-element-card-overlay type="image" data-theme="dark" class="size-large">
+      <img slot="image" src="…" alt="…" />
+      <h3 slot="headline">Values-driven Excellence</h3>
+      <p slot="text">Body copy.</p>
+    </umd-element-card-overlay>
+    <!-- … more cards … -->
+  </div>
+</div>
+```
+
+### Feature Card Grid — 2+1+1 (`umd-layout-grid-child-size-double`)
+
+Production pattern (umd.edu/academics, section right after the hero): a 4-column no-gap grid holding **three** overlay cards — the first spans two columns via `umd-layout-grid-child-size-double` (from CDN `layout.min.css`: `grid-column: span 2` at 650px+), creating a dominant feature card plus two supporting cards. Establishes hierarchy without a section intro: the feature card carries a `slot="text"` body; the supporting cards are headline-only.
+
+```html
+<section class="umd-layout-space-vertical-landing">
+  <div class="umd-layout-space-horizontal-larger">
+    <div class="umd-layout-grid-columns-four umd-animation-grid">
+      <!-- Feature card: spans 2 columns, has body text -->
+      <umd-element-card-overlay type="image" data-theme="dark"
+          class="umd-layout-grid-child-size-double size-large">
+        <img slot="image" src="…" alt="…" />
+        <p slot="headline"><a href="…"><span>Colleges &amp; Schools</span></a></p>
+        <div slot="text"><p>With over 100 majors across 12 schools and colleges…</p></div>
+        <a slot="cta-icon" href="…" aria-label="See all colleges and schools"><span aria-hidden="true">Learn more</span></a>
+      </umd-element-card-overlay>
+      <!-- Supporting cards: single column, headline-only -->
+      <umd-element-card-overlay type="image" data-theme="dark" class="size-large">
+        <img slot="image" src="…" alt="…" />
+        <p slot="headline"><a href="…"><span>Undergraduate Programs</span></a></p>
+        <a slot="cta-icon" href="…"><span aria-hidden="true">Learn more</span></a>
+      </umd-element-card-overlay>
+      <umd-element-card-overlay type="image" data-theme="dark" class="size-large">
+        <img slot="image" src="…" alt="…" />
+        <p slot="headline"><a href="…"><span>Graduate Programs</span></a></p>
+        <a slot="cta-icon" href="…"><span aria-hidden="true">Learn more</span></a>
+      </umd-element-card-overlay>
+    </div>
+  </div>
+</section>
+```
+
+**Notes:**
+- All classes ship from the CDN bundles — no critical.css additions needed.
+- All three cards take `size-large`; the span-2 card gets image room, the singles stay tall.
+- 3 cards in a 4-column grid (2+1+1) is the canonical count. With 4 cards it becomes 2+1+1 / +1 wrapping — check the layout at tablet before using.
+- Works with no section intro — the imagery opens the section cold (see `.codex/recipes/evaluate-design.md`, "Intros are optional").
+
+---
+
 ## Three-Column Offset Grid (`umd-layout-grid-offset-three`)
 
-An alternative to a flat 3-column grid when you want visual interest. Use for 3 overlay or image cards. See `critical.css` for the CSS definition.
+A 3-column grid with a descending staircase offset at desktop — col 1 drops 48px, col 2 drops 104px, col 3 sits at baseline. Creates visual rhythm and depth without needing images on every card.
+
+**Lock:** `umd-layout-space-horizontal-larger` (1600px).
+
+**Always pair with `umd-animation-grid`** on the same wrapper element. This class sets children to `opacity: 0; transform: translateY(50px)` as an initial state; a JS scroll observer reveals them in sequence on scroll. Omitting `umd-animation-grid` leaves the offset stagger but no entrance animation.
+
+**Wrap each child in a plain `<div>`** — do not place `umd-element-*` components as direct children of the grid. The `> *` offset rules target the div wrappers, not the components.
+
+**Add `class="umd-layout-grid-child-fill-height"`** to stat components to equalize card heights within their column.
+
+**Column order matters for the stagger:**
+| Position | Desktop offset | Typical content |
+|---|---|---|
+| 1st child | `margin-top: 48px` | stat `data-display="block"` |
+| 2nd child | `margin-top: 104px` | stat or card `data-display="block"` |
+| 3rd child | `margin-top: 0` (baseline) | stat `data-display="block"` |
+
+**Responsive:** Stacks to 1 column below 650px (gap: 32px). Goes to 3 columns at 768px. Offset only activates at 1024px+.
+
+**When to use:**
+- A mix of block stats and a card in a 3-column layout
+- 3 block stats side by side where visual stagger adds interest
+- **Not for** list-style content, people cards, or event lists — those use other grids
+
+```html
+<section class="umd-layout-vertical-landing">
+  <div class="umd-layout-space-horizontal-larger">
+
+    <umd-element-section-intro-wide class="umd-layout-vertical-landing-child">
+      <h2 slot="headline">By The Numbers</h2>
+    </umd-element-section-intro-wide>
+
+    <div class="umd-layout-grid-offset-three umd-animation-grid">
+      <div>
+        <umd-element-stat data-display="block" class="umd-layout-grid-child-fill-height">
+          <h2 slot="stat">68%</h2>
+          <div slot="text"><p>of all freshmen received some form of financial aid</p></div>
+          <div slot="sub-text"><p>2022-23 admission cycle</p></div>
+        </umd-element-stat>
+      </div>
+      <div>
+        <umd-element-card data-display="block" data-visual-image-aligned="true">
+          <img src="…" slot="image" />
+          <p slot="headline">A diverse, vibrant community of 41,000+ students</p>
+        </umd-element-card>
+      </div>
+      <div>
+        <umd-element-stat data-display="block" class="umd-layout-grid-child-fill-height">
+          <h2 slot="stat">$236M</h2>
+          <div slot="text"><p>in financial aid awarded</p></div>
+          <div slot="sub-text"><p>2022-23 admission cycle</p></div>
+        </umd-element-stat>
+      </div>
+    </div>
+
+  </div>
+</section>
+```
+
+All CSS is in `styles/critical.css` — sections 20 (grid) and 21 (animation).
+
+---
+
+## Border Grid — People Cards (`umd-layout-grid-border-four` / `-three` / `-two`)
+
+A bordered cell grid for `umd-element-person` (block display). Each cell is separated by a `1px solid #E6E6E6` line on all sides — no gap, no background — creating a clean directory table layout.
+
+**Lock:** Always wrap in `umd-layout-space-horizontal-larger` (1600px).
+
+**Which variant to choose:**
+
+| Variant | Columns (desktop) | Columns (tablet 650px+) | Use for |
+|---|---|---|---|
+| `umd-layout-grid-border-four` | 4 | 2 | Large staff directories, president/leadership lists |
+| `umd-layout-grid-border-three` | 3 (768px+) | — | Medium-sized teams |
+| `umd-layout-grid-border-two` | 2 (650px+) | 2 | Small teams, pairs |
+
+All variants stack to 1 column on mobile (below 649px) with no gap.
+
+**Required helper class:** Add `class="umd-shell-person-grid-helper"` to every `umd-element-person` host. This is the container query target — without it, the responsive cell padding (24px → 32px → 48px) does not apply.
+
+```html
+<section class="umd-layout-vertical-landing">
+  <div class="umd-layout-space-horizontal-larger">
+    <div class="umd-layout-grid-border-four">
+      <umd-element-person class="umd-shell-person-grid-helper" data-display="block">
+        <img src="…" alt="…" slot="image" />
+        <a href="/people/name" slot="name"><span aria-hidden="true">Full Name</span></a>
+        <p slot="job-title">Director, Lorem Ipsum</p>
+        <a href="mailto:email@umd.edu" slot="email" rel="noopener noreferrer" target="_blank"
+           aria-label="Email: email@umd.edu"><span aria-hidden="true">email@umd.edu</span></a>
+      </umd-element-person>
+      <!-- repeat for each person -->
+    </div>
+  </div>
+</section>
+```
+
+**Partial row handling:** The CSS automatically handles rows that don't fill all columns (e.g. 5 people in a 4-column grid). The `:not(:has(>:last-child:nth-child(N)))` rules restore correct border rendering — no extra markup needed.
+
+**When NOT to use:** Do not use the border grid for non-person content, event cards, or standard cards — the zero-gap cell layout is designed specifically for the `umd-element-person` block display and the `umd-shell-person-grid-helper` padding system.
+
+All border grid CSS is in `styles/critical.css` — section 19.
 
 ---
 
@@ -134,8 +333,51 @@ An alternative to a flat 3-column grid when you want visual interest. Use for 3 
 
 **When to choose card grid vs. sticky-columns vs. plain stat grid:**
 - **Card grid (block)** — homogenous stats, no editorial framing column needed, want strong visual presence.
-- **Sticky-columns** — there's a meaningful intro paragraph that should sit alongside the stats while scrolling. Works for stats *and* events; the deciding factor is whether you have enough text to justify the sticky column. Sparse intros look weak in a sticky column.
+- **Sticky-columns** — there's intro text (even 2 sentences), or the content column is long enough that white space helps, or there's a featured item to promote alongside the list. See RULES.md §20 for the full decision criteria.
 - **Plain stat grid (default `umd-element-stat`, no `data-display`)** — minimalist, text-only stats; use `data-decoration-line` here if you want the accent line.
+
+### Sticky Text + Stacked Stats — the breathing section
+
+Production pattern (umd.edu/art "The Clarice", umd.edu/academics "Top of the Class"): a fully **imageless** sticky-columns section — editorial text + CTA in the sticky column, a stack of large decoration-line stats in the static column. On both production pages this is the *only* imageless section, placed mid-page between image-heavy runs as the palate cleanser (see `.codex/recipes/evaluate-design.md`, "Palate cleansers between heavy bands").
+
+```html
+<section class="umd-layout-space-vertical-landing">
+  <umd-element-sticky-columns class="umd-layout-space-horizontal-larger">
+    <div slot="sticky-column">
+      <div>
+        <h2 class="mb-md umd-sans-largest-uppercase">Top of the Class</h2>
+        <div class="umd-text-rich-advanced mb-sm">
+          <p>Terps are high achievers, knowledge seekers and creative leaders…</p>
+        </div>
+        <div class="umd-layout-grid-inline-tablet-rows">
+          <umd-element-call-to-action data-display="primary" data-theme="light">
+            <a href="…">Learn more</a>
+          </umd-element-call-to-action>
+        </div>
+      </div>
+    </div>
+    <div slot="static-column">
+      <div class="umd-layout-grid-gap-stacked umd-animation-grid">
+        <umd-element-stat data-decoration-line="true" data-visual-size="large">
+          <h2 slot="stat">300+</h2>
+          <div slot="text"><p>Degree-granting programs</p></div>
+        </umd-element-stat>
+        <umd-element-stat data-decoration-line="true" data-visual-size="large">
+          <h2 slot="stat">#6</h2>
+          <div slot="text"><p>Graduation rate among primarily residential public universities</p></div>
+          <div slot="sub-text"><p>Chronicle of Higher Education</p></div>
+        </umd-element-stat>
+        <!-- third stat… -->
+      </div>
+    </div>
+  </umd-element-sticky-columns>
+</section>
+```
+
+**Notes:**
+- `umd-sans-largest-uppercase` and the `mb-sm`/`mb-md` spacing utilities: the heading class ships from CDN `typography.min.css`; the `mb-*` utilities are in `critical.css` §10.
+- Stat labels must use `slot="text"` (RULES.md §11); `slot="sub-text"` carries the attribution/source line.
+- Three stats is the canonical count — enough to fill the static column against the sticky text without scrolling forever.
 
 ---
 
@@ -339,6 +581,36 @@ Use `umd-element-sticky-columns` when you have one editorially featured event an
 
 ---
 
+## Page Closer — Banner-Promo CTA (site convention, optional)
+
+A recurring per-site convention (used on every page of the admissions and strategic-plan projects): close each page with the same gold `umd-element-banner-promo` CTA band as the final section before the footer. This is a **project-level choice, not a rule** — adopt it site-wide or not at all; the point is that every page of a site ends the same way.
+
+```html
+<section class="umd-layout-vertical-landing">
+  <div class="umd-layout-space-horizontal-larger">
+    <umd-element-banner-promo>
+      <h2 slot="headline">There is a lot more to learn about UMD</h2>
+      <p slot="text">Let's stay in touch!</p>
+      <div slot="actions" class="banner-promo-actions">
+        <umd-element-call-to-action data-display="primary">
+          <a href="…">Join the Mailing List</a>
+        </umd-element-call-to-action>
+        <umd-element-call-to-action data-display="secondary">
+          <a href="…">Connect</a>
+        </umd-element-call-to-action>
+      </div>
+    </umd-element-banner-promo>
+  </div>
+</section>
+```
+
+**Notes:**
+- Default (no `data-theme`) renders the gold band.
+- `.banner-promo-actions` (stacked actions with an 8px gap) is a documented shadow-injection override — see `OVERRIDES.md` before reusing.
+- If the site adopts this closer, keep headline/text/actions consistent across its pages — the repetition is the point (a stable "what next" bookend).
+
+---
+
 ## Footer Address Markup
 
 `umd-element-footer` uses **extract-and-append** (not native HTML slot projection). The component moves `slot="address"` content directly into its shadow DOM, so light-DOM CSS targeting `[slot="address"]` has no effect.
@@ -503,7 +775,7 @@ Stacks CTAs vertically on mobile, switches to a flex row at 650px+. Use to wrap 
 
 ### Adjacent dark sections — eliminating white gaps
 
-See `RULES.md §19` for the canonical rule and full examples. Short version: omit `umd-layout-vertical-landing` from every dark section *except the last one in the group* — that last one carries the margin to push away from the next light section.
+See `RULES.md §19` and §36 for the canonical rules. Short version: omit `umd-layout-vertical-landing` from a dark section when the next section is also dark. When the next section is light/default, the adjacent dark→light selector supplies the required 120px transition gap automatically. Re-audit both neighbors whenever a component changes theme.
 
 ---
 
@@ -933,3 +1205,225 @@ The DS has **no native dropdown** for this slot. Production uses a `<button>` to
   });
 </script>
 ```
+
+---
+
+## Pathway as Editorial Intro to a Card Grid
+
+A `umd-element-pathway` placed directly above a card grid section serves as both the editorial introduction (headline + body + optional CTA) and the visual entry point into the grid. No separate `umd-element-section-intro` is needed when the pathway already frames the content.
+
+**When to use:** The source content has a two-column image+text intro paragraph followed immediately by a grid of cards covering the sub-topics (e.g. "Types of Aid" introducing Scholarships, Work-Study, Loans).
+
+**Dark theme composition:** Place the pathway and card grid each in their own `section.umd-layout-background-full-dark` (no `umd-layout-vertical-landing` on the pathway section — the dark section that follows provides its own top padding). The pathway handles its internal spacing; `umd-layout-background-full-dark` handles the card section's top/bottom padding.
+
+```html
+<!-- Pathway section — no umd-layout-vertical-landing since dark follows -->
+<section class="umd-layout-background-full-dark">
+  <umd-element-pathway data-theme="dark" data-layout-image-position="left">
+    <img slot="image" src="/image.jpg" alt="…" />
+    <h2 slot="headline">Types of Aid</h2>
+    <div slot="text">
+      <p>Intro paragraph that contextualises the cards below — no CTA needed if the cards themselves are the navigation.</p>
+    </div>
+  </umd-element-pathway>
+</section>
+
+<!-- Card grid section — its own dark section, no umd-layout-vertical-landing if dark follows -->
+<section class="umd-layout-background-full-dark">
+  <div class="umd-layout-space-horizontal-larger">
+    <div class="umd-layout-grid-gap-three">
+      <umd-element-card-icon data-theme="dark">
+        <img slot="image" src="/icons/icon-link-dark.svg" alt="" />
+        <h3 slot="headline"><a href="/topic-a">Topic A</a></h3>
+        <p slot="text">Short description.</p>
+      </umd-element-card-icon>
+      <!-- repeat -->
+    </div>
+  </div>
+</section>
+```
+
+**Note on `umd-layout-background-full-dark` spacing:** Each section with this class has built-in `padding: 48px 0` (80px tablet, 104px highDef). Do NOT add an additional inner `umd-layout-vertical-landing` wrapper div inside the dark section to inflate the gap — keep each logical component in its own `umd-layout-background-full-dark` section and let the section padding do the work.
+
+---
+
+## Dark Card-Icon Grid (`umd-element-card-icon data-theme="dark"`)
+
+`umd-element-card-icon` supports `data-theme="dark"` which renders a dark card background with white text and a light icon. Use `icon-link-dark.svg` (or another `*-dark` icon variant) so the icon is visible against the dark card background.
+
+**Use inside `umd-layout-background-full-dark`** — the dark card sits on a dark section with just enough internal contrast to define each card boundary.
+
+```html
+<section class="umd-layout-background-full-dark">
+  <div class="umd-layout-space-horizontal-larger">
+    <div class="umd-layout-grid-gap-three">
+      <umd-element-card-icon data-theme="dark">
+        <img slot="image" src="../images/icons/icon-link-dark.svg" alt="" />
+        <h3 slot="headline"><a href="/scholarships">Scholarships &amp; Grants</a></h3>
+        <p slot="text">Free money you don't repay — based on financial need and/or academic merit.</p>
+      </umd-element-card-icon>
+      <umd-element-card-icon data-theme="dark">
+        <img slot="image" src="../images/icons/icon-link-dark.svg" alt="" />
+        <h3 slot="headline"><a href="/work-study">Federal Work-Study</a></h3>
+        <p slot="text">Part-time employment on or off campus for students with demonstrated financial need.</p>
+      </umd-element-card-icon>
+      <umd-element-card-icon data-theme="dark">
+        <img slot="image" src="../images/icons/icon-link-dark.svg" alt="" />
+        <h3 slot="headline"><a href="/loans">Loans</a></h3>
+        <p slot="text">Borrowed funds repaid after graduation; federal terms based on financial need.</p>
+      </umd-element-card-icon>
+    </div>
+  </div>
+</section>
+```
+
+**Use this pattern when:** The content has no strong photography and the topic is better served by a navigational list than image-driven cards. Pairs naturally with the "Pathway as intro" pattern above.
+
+**Do not use on light-background sections** — a dark card on a white page looks like an orphaned dark band. Dark card-icons belong inside `umd-layout-background-full-dark` sections.
+
+## Filter Band (filterable listing with select + search)
+
+Gray highlight panel with a category select, a text search, a clear button,
+a live results count, and a divider-separated item list filtered client-side.
+First used on belonging resources; reusable on any static listing page.
+
+Almost everything is upstream CSS: `umd-layout-background-highlight-light`,
+`umd-layout-grid-inline-stretch`, `umd-layout-grid-gap-two/stacked`
+(layout.min.css), `umd-text-line-trailing-light`, `umd-field-select-wrapper`
+(element.min.css), `umd-animation-line-slide-graydark-red` (animation.min.css),
+`sr-only` (accessibility.min.css). The search row, results count, and divider
+list are critical.css §23 (`umd-filter-*`). Behavior comes from
+`scripts/filter-band.js` — data-attribute driven, no ids required, multiple
+bands per page supported.
+
+```html
+<form data-filter-band data-filter-items=".umd-filter-item"
+      class="umd-layout-background-highlight-light umd-layout-grid-gap-stacked"
+      data-animation="off" action="">
+
+  <div class="umd-layout-grid-inline-stretch">
+    <h2 class="umd-text-line-trailing-light"><span>Filter Resources</span></h2>
+    <button type="reset" data-filter-clear class="umd-animation-line-slide-graydark-red">
+      <span aria-hidden="true">Clear filters</span>
+      <span class="sr-only">Clear all filters</span>
+    </button>
+  </div>
+
+  <div class="umd-layout-grid-gap-two" data-animation="off">
+    <div>
+      <label for="type-filter" class="sr-only">Filter by type</label>
+      <div class="umd-field-select-wrapper">
+        <select id="type-filter" data-filter-select name="types">
+          <option value="all">All</option>
+          <option value="some-category">Some Category</option>
+        </select>
+      </div>
+    </div>
+    <div>
+      <label for="text-search" class="sr-only">Search</label>
+      <div class="umd-filter-search-row">
+        <input type="text" id="text-search" data-filter-search
+               placeholder="Search" autocomplete="off" />
+        <button type="submit" class="umd-filter-search-btn" aria-label="Submit search">
+          <svg viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+            <path d="M8.5 3a5.5 5.5 0 0 1 4.383 8.823l3.647 3.647a1 1 0 0 1-1.414 1.414l-3.647-3.647A5.5 5.5 0 1 1 8.5 3zm0 2a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7z"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+</form>
+
+<p data-filter-count class="umd-filter-results-count" aria-live="polite"></p>
+
+<div class="umd-layout-grid-gap-stacked umd-filter-list" data-animation="off">
+  <umd-element-card data-display="list" class="umd-filter-item" data-category="some-category">
+    …
+  </umd-element-card>
+  <!-- one .umd-filter-item with data-category per entry -->
+</div>
+
+<!-- end of body -->
+<script src="../scripts/filter-band.js"></script>
+```
+
+Rules:
+- Each filterable item needs `class="umd-filter-item"` AND `data-category="…"`
+  matching a `<option value>`. The "all" option is required.
+- Keep `data-animation="off"` on the form and the list — entry animations on a
+  filterable list re-trigger awkwardly when items toggle.
+- The count element can live anywhere; `aria-live="polite"` announces updates.
+- Text search matches against each item's full `textContent` (case-insensitive).
+
+## Modal (`umd-element-modal`) — content-detail dialogs
+
+Verified against v1.18.12. The component supplies the fixed backdrop
+(`rgba(0,0,0,0.9)`), backdrop-click close, focus trap, and body scroll lock.
+Everything inside the backdrop is page-supplied light DOM.
+
+Reference implementation: strategic-plan-design
+`pages/commitment/we-reimagine-learning.html` (initiative Details + goal
+Objectives modals).
+
+```html
+<!-- Trigger: any element carrying data-modal-target -->
+<umd-element-call-to-action data-display="primary">
+  <button type="button" data-modal-target="modal-example">Details</button>
+</umd-element-call-to-action>
+
+<!-- Modal: content MUST be slot="content"; start hidden -->
+<umd-element-modal id="modal-example" data-layout-hidden="true">
+  <div class="my-modal-panel" slot="content">
+    <button type="button" data-modal-close aria-label="Close dialog">×</button>
+    <h3>Title</h3>
+    <div class="umd-text-rich-advanced"><p>Body copy…</p></div>
+  </div>
+</umd-element-modal>
+```
+
+```js
+// End-of-body wiring. composedPath() is REQUIRED: umd-element-call-to-action
+// and umd-element-card-overlay (cta-icon slot) clone their child link/button
+// into shadow DOM, so e.target.closest('[data-modal-target]') never matches.
+(function () {
+  function findInPath(e, attr) {
+    var path = e.composedPath ? e.composedPath() : [e.target];
+    for (var i = 0; i < path.length; i++) {
+      var n = path[i];
+      if (n.nodeType === 1 && n.hasAttribute && n.hasAttribute(attr)) return n;
+    }
+    return null;
+  }
+  document.addEventListener('click', function (e) {
+    var trigger = findInPath(e, 'data-modal-target');
+    if (trigger) {
+      e.preventDefault();
+      var modal = document.getElementById(trigger.getAttribute('data-modal-target'));
+      if (modal) modal.setAttribute('data-layout-hidden', 'false'); // true→false opens
+      return;
+    }
+    var closer = findInPath(e, 'data-modal-close');
+    if (closer) {
+      var open = closer.closest('umd-element-modal') ||
+        document.querySelector('umd-element-modal[data-layout-hidden="false"]');
+      if (open) open.setAttribute('data-layout-hidden', 'true'); // false→true closes
+    }
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.key !== 'Escape') return;
+    document.querySelectorAll('umd-element-modal[data-layout-hidden="false"]')
+      .forEach(function (m) { m.setAttribute('data-layout-hidden', 'true'); });
+  });
+})();
+```
+
+Rules:
+- Content must be a single child with `slot="content"` — the shadow DOM renders
+  `<slot name="content">`; unslotted children never display.
+- Show/hide is the observed `data-layout-hidden` attribute: the `true→false`
+  transition opens, `false→true` closes. The component resets it to `"true"`
+  when it closes itself, so attribute state stays in sync.
+- `data-visual-open` / `data-visual-closed` are **not implemented** in v1.18.12.
+- The slotted panel is unstyled — the page provides the white box (match a lock
+  width, e.g. 992px small lock), padding, close button, and typography
+  (`.umd-sans-extralarge-bold` for the title, `.umd-text-rich-advanced` body).

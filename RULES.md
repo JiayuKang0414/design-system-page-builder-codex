@@ -119,8 +119,11 @@ The standard pathway (`umd-element-pathway` with no `data-display`) renders a tw
 | (none) | white | transparent | ⚠ Both float on white — broken |
 | `dark` | black | transparent | ✓ Wrap in `background: #000` section |
 | `maryland` | red (#e21833) | transparent | ✓ Wrap in `background: #000` section |
+| `light` | ⚠ **none — silent no-op** | transparent | Do not use on standard pathway |
 
 **Rule:** Standard pathway must only be used when a dark section wrapper (`background: #000` or similar) contains the entire component — so both columns sit within a contained dark field.
+
+**`data-theme="light"` is unimplemented on the standard pathway** in web-components-library v1.18.12 — upstream `composite/pathway/standard.js` only paints dark/maryland text-column backgrounds, so a light standard pathway renders with no panel at all and fails silently. For a light pathway with the gray offset panel, use the overlay variant: `data-display="overlay" data-theme="light"` (self-contained — see below — and includes the scroll-driven panel entrance animation).
 
 ```html
 <!-- ✓ Correct — dark theme inside dark section -->
@@ -138,9 +141,27 @@ The standard pathway (`umd-element-pathway` with no `data-display`) renders a tw
 
 Background panel color by theme:
 - No theme → white panel
-- `data-theme="dark"` → black panel (recommended for photography)  
+- `data-theme="white"` → white panel (explicit; use when the section background is dark and you want a white panel — visually identical to no-theme but communicates intent)
+- `data-theme="dark"` → black panel (recommended for photography)
 - `data-theme="maryland"` → red panel
 - `data-theme="light"` → light gray panel
+
+### `data-animation` semantics — never include the attribute valueless
+
+Applies to `umd-element-pathway` and `umd-element-hero` (v1.18.12). The attribute reader treats the animation as **ON by default when the attribute is absent**, and only the exact value `"true"` reads as true — so a **bare `data-animation` (no value) reads as false and silently DISABLES the entrance animation**:
+
+```html
+<!-- ✓ Animation on (default) -->
+<umd-element-pathway data-display="overlay" data-theme="light">
+
+<!-- ✓ Animation explicitly off -->
+<umd-element-pathway data-display="overlay" data-theme="light" data-animation="false">
+
+<!-- ✗ Looks like an opt-in, actually turns the animation OFF -->
+<umd-element-pathway data-display="overlay" data-theme="light" data-animation>
+```
+
+`data-animation="true"` is valid but identical to omitting the attribute. (The stat component's `data-animation="offset"` is a different, enum-valued API — see the stat registry entry.)
 
 ### Hero pathway exception
 
@@ -375,8 +396,6 @@ A section intro or section header **always** needs `umd-layout-vertical-landing-
 
 This rule applies whether the content that follows is a card grid, a feed component (`umd-feed-news`, `umd-feed-news-list`, `umd-feed-news-featured`), CTA buttons, or any other content block.
 
-When recreating a page, apply this rule after later edits too. If a section intro is added, moved, or converted from carousel/list content to a card grid, re-check that the child spacing wrapper still sits between `umd-element-section-intro-wide` and the following content.
-
 ### Note on pathway sections
 
 Pathway and hero components manage their own internal spacing. When wrapping a pathway in a dark `<section>`, apply `umd-layout-vertical-landing` to the `<section>` element, not to the component itself. The section's `margin-bottom` creates the gap to the next section.
@@ -500,6 +519,21 @@ Pathway and hero components manage their own internal horizontal spacing — do 
 </section>
 ```
 
+### Grid lock reference
+
+| Grid / layout | Lock | Notes |
+|---|---|---|
+| `umd-layout-grid-masonry` | `umd-layout-space-horizontal-normal` (1280px) | Overlay cards or person bio, 2–4 items |
+| `umd-layout-grid-offset-three` | `umd-layout-space-horizontal-larger` (1600px) | Block stats + card mix, 3 columns |
+| `umd-layout-grid-border-four` / `-three` / `-two` | `umd-layout-space-horizontal-larger` (1600px) | Person cards directory grid |
+| `umd-layout-grid-columns-four` | `umd-layout-space-horizontal-larger` (1600px) | Standard 4-column card grid |
+| `umd-layout-grid-gap-two` | `umd-layout-space-horizontal-larger` (1600px) | 2-column content grid |
+| `umd-layout-grid-gap-stacked` | `umd-layout-space-horizontal-larger` (1600px) | Single-column stacked list (used inside sticky-columns static slot) |
+| Card list / event list (standalone) | `umd-layout-space-horizontal-small` (992px) | See §33 |
+| Card list / event list (inside sticky-columns) | `umd-layout-space-horizontal-larger` (1600px) via host | See §33 |
+
+---
+
 ### Quote uses `umd-layout-space-horizontal-normal`
 
 `umd-element-quote` is not full-bleed. Wrap it in `.umd-layout-space-horizontal-normal` (1280px) to constrain its width and maintain consistent page gutters:
@@ -511,6 +545,45 @@ Pathway and hero components manage their own internal horizontal spacing — do 
     <p slot="attribution">Person Name, Title</p>
   </umd-element-quote>
 </div>
+```
+
+### Short quotes use `data-visual-size="large"` (150 characters or fewer)
+
+When the quote text is **150 characters or fewer (including spaces)**, add `data-visual-size="large"` to scale the text up — a short quote reads as undersized at the default scale. Above 150 characters, omit it (the default scale keeps a long quote from overflowing its column). This applies to **both** the standalone `umd-element-quote` and a `umd-element-quote` placed in the `content` slot of `umd-layout-image-expand`.
+
+```html
+<!-- ✓ Short quote (≤150 chars) → large -->
+<umd-element-quote data-visual-size="large">
+  <p slot="quote">This is our time to reinvent our University.</p>
+  <p slot="attribution">President Darryl J. Pines</p>
+</umd-element-quote>
+
+<!-- ✓ Long quote (>150 chars) → default size, no attribute -->
+<umd-element-quote>
+  <p slot="quote">We must be united in our noble and fearless purpose, because celebrating differences and leveling societal inequities must be among our greatest strengths and our progress.</p>
+  <p slot="attribution">Person Name</p>
+</umd-element-quote>
+```
+
+`data-visual-size="large"` is in the quote registry but is **not rendered by web-components-library v1.18.12** — it requires the quote-size shadow-injection polyfill (see `OVERRIDES.md`). Include that injection on any page that uses the attribute until it ships upstream.
+
+### Quote attribution slots must use `<p>` — not `<cite>` or `<span>`
+
+Both `slot="attribution"` and `slot="attribution-sub-text"` must use `<p>` tags. Using `<cite>` italicises the text and renders inline (no line break). Using `<span>` renders inline and runs attribution and sub-text together on one line.
+
+```html
+<!-- ✓ Correct — block elements, no italics, line break between -->
+<umd-element-quote>
+  <p slot="quote">Quote text here.</p>
+  <p slot="attribution">Person Name</p>
+  <p slot="attribution-sub-text">Title, Department</p>
+</umd-element-quote>
+
+<!-- ✗ Wrong — cite italicises and renders inline -->
+<umd-element-quote>
+  <cite slot="attribution">Person Name</cite>
+  <span slot="attribution-sub-text">Title, Department</span>
+</umd-element-quote>
 ```
 
 ### Extra properties required when wrapping `umd-element-section-intro-wide`
@@ -700,15 +773,33 @@ Image-overlay cards render a dark scrim over the image, so text/icons must be wh
 
 The image-expand component does **not** support `data-theme`. It has no internal text color styling — the shadow DOM text-lock container defaults to `color: rgb(0, 0, 0)` (black). Since content overlays the image with a dark semi-transparent overlay (`rgba(0,0,0,0.65)`), black text is invisible.
 
-**When placing raw HTML in the `content` slot, all text must be explicitly set to white**, either via inline styles or utility classes:
+**When placing raw HTML in the `content` slot, use UMD typography classes for headings and the dark rich-text class for body copy.** Do NOT use inline `font-family`, `font-size`, `font-weight`, `line-height`, or `margin` — those duplicate the design system and are the primary source of styling regressions in this component.
 
 ```html
-<!-- ✓ Correct — explicit white text -->
+<!-- ✓ Correct — UMD typography classes, dark rich text class -->
 <umd-layout-image-expand>
   <div slot="content">
     <div>
-      <h2 style="color: white;">Section Heading</h2>
-      <p style="color: white;">Supporting text for this section.</p>
+      <h2 class="umd-sans-larger text-white mb-md">Section Heading</h2>
+      <div class="umd-text-rich-simple-large-dark mb-md">
+        <p>Supporting text for this section.</p>
+      </div>
+      <div>
+        <umd-element-call-to-action data-display="primary" data-theme="dark">
+          <a href="/learn-more">Learn More</a>
+        </umd-element-call-to-action>
+      </div>
+    </div>
+  </div>
+  <img slot="image" src="/feature.jpg" alt="" />
+</umd-layout-image-expand>
+
+<!-- ✗ Wrong — inline font declarations duplicate the DS and create regressions -->
+<umd-layout-image-expand>
+  <div slot="content">
+    <div>
+      <h2 style="color:white; font-family:'Interstate',Helvetica,Arial,Verdana,sans-serif; font-weight:700; font-size:clamp(22px,2.5vw,38px); line-height:1.2em; margin:0 0 24px;">Section Heading</h2>
+      <p style="color:white; font-size:18px; line-height:1.5em; margin:0 0 32px;">Supporting text.</p>
     </div>
   </div>
   <img slot="image" src="/feature.jpg" alt="" />
@@ -725,6 +816,8 @@ The image-expand component does **not** support `data-theme`. It has no internal
   <img slot="image" src="/feature.jpg" alt="" />
 </umd-layout-image-expand>
 ```
+
+Available heading scale classes (from `typography.min.css`): `umd-sans-smaller`, `umd-sans-small`, `umd-sans-medium`, `umd-sans-large`, `umd-sans-larger`, `umd-sans-largest`, `umd-sans-largest-uppercase`. Pair with `text-white` and spacing utilities (`mb-md` = 24px, `mb-sm` = 16px) — these are defined in `styles/critical.css`.
 
 ### Placing a quote inside image-expand — use `data-visual-transparent="true"`
 
@@ -781,7 +874,8 @@ The host element requires `width: 100%` in critical CSS. Without it, the host co
 
 | Issue | Symptom | Fix |
 |---|---|---|
-| No `color: white` on raw text | Text invisible (black on dark overlay) | Add `style="color:white"` to every text element in content slot |
+| No `color: white` on raw text | Text invisible (black on dark overlay) | Use `umd-sans-*` + `text-white` on headings; `umd-text-rich-simple-large-dark` on body copy — do NOT use inline font declarations |
+| Inline `font-family`/`font-size`/`font-weight` on content | Styling regressions, design system drift | Delete inline styles; use UMD typography classes (see §17 examples) |
 | Quote has opaque background | Background card blocks image | Add `data-visual-transparent="true"` to `umd-element-quote` |
 | Quote fills full width | Quote panel too wide, poor composition | Add `max-width: 480px` + `margin-left/right: auto` on `div[slot="content"]` |
 | No dark section wrapper | White gaps around image during scroll | Wrap in `<section style="background:#000;">` |
@@ -872,6 +966,16 @@ This applies to any dark-to-dark transition: hero → dark section, dark section
 
 `umd-element-sticky-columns` is a layout container. The component itself has no opinions about how slot content is styled — you are responsible for applying the correct UMD typography and layout classes inside each slot.
 
+### When to use sticky-columns
+
+Use `umd-element-sticky-columns` when any of the following conditions apply:
+
+- **Meaningful intro text** — even a 2-sentence paragraph qualifies. The sticky column keeps the editorial context visible while the user scrolls the content column. A single short label or eyebrow alone is not enough.
+- **Visual breathing room** — when a section would otherwise be a long run of stacked rows (many card rows, a long event list, a tall accordion), the sticky column breaks up the monotony and adds white space that improves readability.
+- **Featured item + list** — when there is a featured event, article, special link, or imagery that you want to pair with a scrollable list. Use the overlay card or event feature in the sticky column; the list goes in the static column. This signals editorial hierarchy — one thing is promoted, the rest are browsable.
+
+**Do not use sticky-columns** when intro copy is absent or when the content column is short enough to read without scrolling — the layout loses its purpose if nothing actually sticks.
+
 ### Sticky column (left — sticks while user scrolls)
 
 Use the following pattern, verified against umd.edu production markup:
@@ -934,6 +1038,10 @@ Always apply the horizontal spacing class and sticky offset on the host element:
 
 - `class="umd-layout-space-horizontal-larger"` — page gutters (1600px max-width)
 - `data-layout-position="100px"` — sticky top offset; set to match your sticky nav height so the sticky column clears it when scrolling
+
+### Landing-page only
+
+`umd-element-sticky-columns` is **not allowed on interior pages**. Interior pages conform to their own layout widths and column structure. Only use sticky-columns on landing pages.
 
 ---
 
@@ -1348,24 +1456,41 @@ The carousel components do not enforce child types in the DS source — slots ac
 
 ### `umd-element-carousel-cards` — built-in dark texture surface
 
-The carousel ships its own dark SVG-textured background, so slotted cards must be designed for a dark surface. Two options:
+The carousel ships its own dark SVG-textured background, so slotted cards must be designed for a dark surface.
+
+**`slot="headline"` is functionally required.** The DS source marks it optional, but omitting it leaves the full-bleed dark carousel floating without section context on the page. Always include a headline.
+
+**Preferred card type: `umd-element-card-overlay`** — image-driven overlay cards fit the dark texture naturally. `umd-element-card data-theme="dark"` is also valid when cards have substantive body copy beyond the headline, but overlay cards are the common production pattern.
 
 | Card | When to use |
 |---|---|
-| `umd-element-card` with `data-theme="dark"` | Standard text + image card on the dark texture. Use when each card has body copy beyond the headline. |
-| `umd-element-card-overlay type="image" data-theme="dark"` | Image-overlay card. Use when each card is primarily image-driven and the headline overlays the image. |
-| `umd-element-card-overlay data-theme="dark"` | Text-only carousel card. Use when the source carousel has a non-image card/slide; do not drop it or invent an image. |
+| `umd-element-card-overlay data-theme="dark"` | Image-overlay card. Use when each card is primarily image-driven (the common case). |
+| `umd-element-card` with `data-theme="dark"` | Standard text + image card. Use only when cards have substantial body copy beyond the headline. |
 
 Do **not** use light-theme standard cards — they render a white block on the dark texture.
 
-When recreating an existing page, match the source slide count and order. Many source carousels mix image cards with non-image/stat/navigation cards. Preserve that mix inside the DS carousel.
+**Section eyebrow / tagline:** There is no eyebrow slot on this component. To add a category label above the carousel's intro block, place a `umd-text-line-trailing` element in a horizontal wrapper (`umd-layout-space-horizontal-larger`) directly above the `umd-element-carousel-cards` in the page flow:
 
 ```html
-<!-- ✓ Standard dark cards -->
+<!-- ✓ Section eyebrow above the carousel (not a slot — page-level placement) -->
+<section class="umd-layout-vertical-landing">
+  <div class="umd-layout-space-horizontal-larger">
+    <p class="umd-text-line-trailing"><span>Featured Stories</span></p>
+  </div>
+  <umd-element-carousel-cards>
+    <h2 slot="headline">Campus News</h2>
+    <p slot="text">The latest from across the University of Maryland.</p>
+    <div slot="cards">…</div>
+  </umd-element-carousel-cards>
+</section>
+```
+
+```html
+<!-- ✓ Standard dark cards — always include headline -->
 <umd-element-carousel-cards>
   <h2 slot="headline">Resources</h2>
   <div slot="cards">
-    <umd-element-card data-theme="dark">
+    <umd-element-card data-theme="dark" data-visual-image-aligned="true">
       <img slot="image" src="/img.jpg" alt="…" />
       <h3 slot="headline"><a href="/x">Title</a></h3>
       <p slot="text">Supporting copy.</p>
@@ -1373,25 +1498,13 @@ When recreating an existing page, match the source slide count and order. Many s
   </div>
 </umd-element-carousel-cards>
 
-<!-- ✓ Mixed source carousel: image-overlay cards + text-only cards -->
+<!-- ✓ Image-overlay cards (preferred) — always include headline -->
 <umd-element-carousel-cards>
+  <h2 slot="headline">Campus Stories</h2>
   <div slot="cards">
     <umd-element-card-overlay type="image" data-theme="dark">
       <img slot="image" src="/img.jpg" alt="…" />
-      <h3 slot="headline"><a href="/story">Story headline</a></h3>
-      <div slot="actions">
-        <umd-element-call-to-action data-display="secondary" data-theme="dark">
-          <a href="/story">Read More</a>
-        </umd-element-call-to-action>
-      </div>
-    </umd-element-card-overlay>
-    <umd-element-card-overlay data-theme="dark">
-      <h3 slot="headline"><a href="/stat">7 research centers advancing solutions</a></h3>
-      <div slot="actions">
-        <umd-element-call-to-action data-display="secondary" data-theme="dark">
-          <a href="/stat">Learn More</a>
-        </umd-element-call-to-action>
-      </div>
+      <h3 slot="headline"><a href="/x">Title</a></h3>
     </umd-element-card-overlay>
   </div>
 </umd-element-carousel-cards>
@@ -1504,35 +1617,7 @@ This default does not apply to:
 
 ---
 
-## 31. Standard card grids use `umd-layout-grid-gap-*`, not bare column grids
-
-For standard card grids, use the gap grid utilities so card-to-card spacing is explicit:
-
-| Card count / layout | Grid class |
-|---|---|
-| 2 columns | `umd-layout-grid-gap-two` |
-| 3 columns | `umd-layout-grid-gap-three` |
-| 4 columns | `umd-layout-grid-gap-four` |
-| 4 columns with extra high-def breathing room | `umd-layout-grid-gap-four-large` |
-
-`umd-layout-grid-columns-four` is only a column-count utility. It sets responsive columns, but it is not the preferred standard card grid wrapper because the internal card gap is not explicit across all larger breakpoints. For a four-card program/navigation/news grid, prefer:
-
-```html
-<div class="umd-layout-grid-gap-four">
-  <umd-element-card>...</umd-element-card>
-  <umd-element-card>...</umd-element-card>
-  <umd-element-card>...</umd-element-card>
-  <umd-element-card>...</umd-element-card>
-</div>
-```
-
-For image-overlay grids, `umd-layout-grid-columns-four` can still be used when the visual goal is a tighter wall of overlay tiles. For standard cards, reach for `umd-layout-grid-gap-*` first.
-
-Source: `design-system/packages/styles/source/layout/grid/gap.ts` sets `umd-layout-grid-gap-four`; `design-system/packages/styles/source/layout/grid/base.ts` sets the bare `umd-layout-grid-columns-four` column behavior.
-
----
-
-## 32. Section-intro — text-only variant for body sentences
+## 31. Section-intro — text-only variant for body sentences
 
 `umd-element-section-intro` has a built-in "text-only" treatment: when only `slot="text"` is provided (no `slot="headline"`), the component automatically renders the text larger and bolder. This is the right component for a long body sentence that functions as a section's lede with no separate title above it.
 
@@ -1559,33 +1644,96 @@ Do **not** force a body sentence into `<h2 slot="headline">` to "fill" the headl
 
 ---
 
-## 33. Landing-page accordion stack
+## 32. Landing-page accordion stack
 
 A vertical stack of `umd-element-accordion-item` siblings on a landing page uses two specific layout choices.
 
-| Property | Value | Token |
+| Property | Value | Source |
 |---|---|---|
 | Horizontal wrap | `umd-layout-space-horizontal-small` (992px max-width) | — |
-| Gap between items | 8px | `var(--umd-space-min)` |
+| Gap between items | 8px | shipped by `web-components.min.css`: `umd-element-accordion-item + umd-element-accordion-item { margin-top: 8px }` |
 
 ```html
 <section class="umd-layout-vertical-landing">
   <div class="umd-layout-space-horizontal-small">
-    <div style="display: grid; gap: var(--umd-space-min);">
-      <umd-element-accordion-item>
-        <p slot="headline">Section A</p>
-        <div slot="text">…</div>
-      </umd-element-accordion-item>
-      <umd-element-accordion-item>
-        <p slot="headline">Section B</p>
-        <div slot="text">…</div>
-      </umd-element-accordion-item>
-    </div>
+    <umd-element-accordion-item>
+      <p slot="headline">Section A</p>
+      <div slot="text">…</div>
+    </umd-element-accordion-item>
+    <umd-element-accordion-item>
+      <p slot="headline">Section B</p>
+      <div slot="text">…</div>
+    </umd-element-accordion-item>
   </div>
 </section>
 ```
 
-Why narrow: accordion bodies are text-list-heavy and read better at a constrained measure. `-larger`/`-normal` produce overly wide rows that scan poorly. Why 8px: `--umd-space-min` is the DS token for the smallest spacing step (verified in `tokens.min.css`). The default `umd-layout-grid-gap-stacked` (24px+) puts too much air between collapsed accordion headers.
+Why narrow: accordion bodies are text-list-heavy and read better at a constrained measure. `-larger`/`-normal` produce overly wide rows that scan poorly. Why no gap wrapper: the upstream bundle already ships the 8px sibling margin (verified in `web-components.min.css`), so accordion items only need to be **adjacent siblings** — do **not** wrap them in a grid with `gap: var(--umd-space-min)`; the gap stacks with the built-in sibling margin and doubles the space to 16px. (An earlier revision of this section prescribed the grid-gap wrapper — that was wrong.) Do not use `umd-layout-grid-gap-stacked` (24px+) either; it also stacks with the sibling margin and puts too much air between collapsed headers.
+
+### Exception: accordion inside `umd-element-sticky-columns`
+
+When the accordion stack is in the `static-column` slot of a `umd-element-sticky-columns` layout (text lockup on the left, accordion on the right), the lock is controlled by the **sticky-columns host** (`umd-layout-space-horizontal-larger`). Do not add an additional `umd-layout-space-horizontal-small` wrapper around the accordion — the host lock already governs the section width.
+
+---
+
+## 33. Card list and event list — lock rules (landing pages)
+
+These rules apply to landing pages only. Interior pages use their own layout widths and are not governed by these rules.
+
+### Standalone (no sticky-columns)
+
+Use `umd-layout-space-horizontal-small` (992px) as the wrapping lock:
+
+```html
+<!-- ✓ Card list — standalone -->
+<section class="umd-layout-vertical-landing">
+  <div class="umd-layout-space-horizontal-small">
+    <umd-element-card data-display="list">…</umd-element-card>
+    <umd-element-card data-display="list">…</umd-element-card>
+  </div>
+</section>
+
+<!-- ✓ Event list — standalone -->
+<section class="umd-layout-vertical-landing">
+  <div class="umd-layout-space-horizontal-small">
+    <umd-element-event data-display="list">…</umd-element-event>
+    <umd-element-event data-display="list">…</umd-element-event>
+  </div>
+</section>
+```
+
+### Inside `umd-element-sticky-columns`
+
+When a card list or event list occupies the `static-column` slot (with a text lockup in the sticky column, or an overlay/event feature card on either side), the lock is controlled by the **sticky-columns host** (`umd-layout-space-horizontal-larger`). Do not add a `umd-layout-space-horizontal-small` wrapper inside the slot.
+
+```html
+<!-- ✓ Card list in sticky-columns -->
+<umd-element-sticky-columns
+  class="umd-layout-space-horizontal-larger"
+  data-layout-position="100px">
+  <div slot="sticky-column">
+    <h2 class="umd-sans-largest-uppercase mb-md">Section Heading</h2>
+    <div class="umd-text-rich-advanced mb-sm"><p>Body copy.</p></div>
+  </div>
+  <div slot="static-column">
+    <div class="umd-layout-grid-gap-stacked">
+      <umd-element-card data-display="list">…</umd-element-card>
+      <umd-element-card data-display="list">…</umd-element-card>
+    </div>
+  </div>
+</umd-element-sticky-columns>
+```
+
+The same applies for `umd-element-event data-display="list"` in the static column.
+
+| Component | Context | Lock |
+|---|---|---|
+| `umd-element-card data-display="list"` | Standalone | `umd-layout-space-horizontal-small` (992px) |
+| `umd-element-card data-display="list"` | Inside `umd-element-sticky-columns` | `umd-layout-space-horizontal-larger` (1600px) via host |
+| `umd-element-event data-display="list"` | Standalone | `umd-layout-space-horizontal-small` (992px) |
+| `umd-element-event data-display="list"` | Inside `umd-element-sticky-columns` | `umd-layout-space-horizontal-larger` (1600px) via host |
+
+---
 
 ## 34. Inline link styling — always use the gradient underline pattern
 
@@ -1611,3 +1759,35 @@ When writing page-built CSS for inline `<a>` links inside body copy, AI summarie
 For dark backgrounds, use white (`#ffffff`) instead of black, and gold (`#FFD200`) on hover — see `umd-text-rich-advanced-dark a` in `LAYOUT-PATTERNS.md`.
 
 **Why:** `text-decoration: underline` renders the browser's default underline on top of the gradient and prevents the red hover animation from being visible. The design system never uses browser-native underlines for body links.
+
+---
+
+## 35. Slider/carousel horizontal overflow — use `body { overflow-x: clip }`
+
+`umd-element-slider-events` and other carousel components expand beyond the viewport width during slide transitions, causing a horizontal scrollbar at the document level. `overflow: hidden` on the wrapping section alone is not sufficient.
+
+**Use `overflow-x: clip` on `body`** — this is already included in `styles/critical.css` (section 21) and applied to every page via `TEMPLATE.html`. Do not add it inline to a page unless it is somehow missing from the inlined critical CSS.
+
+**Why `clip` and not `hidden`:** `overflow-x: hidden` promotes the element to a scroll container, which breaks `animation-timeline: scroll()` (scroll-driven animations) and shifts `IntersectionObserver` offsets. `overflow-x: clip` suppresses the scroll without creating a scroll container.
+
+---
+
+## 36. Dark → light section transition gap
+
+When `.umd-layout-background-full-dark` is immediately followed by a standard (light/white) section, the design requires 120px of white breathing room between them. This rule is already included in `styles/critical.css` (section 22) and applies automatically via the adjacent sibling selector:
+
+```css
+.umd-layout-background-full-dark + section:not(.umd-layout-background-full-dark) {
+  margin-top: 120px;
+}
+```
+
+The rule is conditional — a dark section followed by another dark section gets no extra gap (the selector only matches when the following sibling lacks the dark class). Do not add manual `margin-top` or `padding-top` to achieve this gap; the CSS rule handles it.
+
+Whenever a component changes between dark and light/default, re-audit both neighboring sections:
+
+- Dark → dark: remove `umd-layout-vertical-landing` from the first section so no white gap appears (§19).
+- Dark → light/default: keep each section's normal layout classes. The adjacent selector above guarantees the transition gap, including when the preceding dark section previously had its landing spacing removed.
+- Light/default → dark: use normal section spacing unless the design intentionally calls for a flush transition.
+
+Theme changes are therefore a layout change, not only a color change. Do not leave spacing decisions inherited from the component's previous theme.
