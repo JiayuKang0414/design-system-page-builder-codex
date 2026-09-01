@@ -1,9 +1,9 @@
 {
   "_meta": {
     "version": "1.0.0",
-    "components_version": "1.18.12",
+    "components_version": "1.19.5",
     "source_package": "@universityofmaryland/web-components-library",
-    "last_verified": "2026-06-03",
+    "last_verified": "2026-08-21",
     "cdn_base": "https://unpkg.com/@universityofmaryland/web-components-library@1.18.12/dist",
     "notes": "Verified from design-system submodule source.",
     "category": "layout",
@@ -12,18 +12,16 @@
   "modal": {
     "tag": "umd-element-modal",
     "label": "Modal",
-    "description": "Overlay modal with backdrop and focus management. Programmatically controlled via observed data-visual-open / data-visual-closed attributes.",
+    "description": "Overlay modal with backdrop (rgba(0,0,0,0.9)), backdrop-click close, focus trap, and body scroll lock. Shown/hidden by toggling the observed data-layout-hidden attribute.",
     "slots": [
-      {"name": "default", "required": false, "description": "Modal content (any markup). Use the default slot \u2014 no named slot.", "example": "<umd-element-modal data-layout-hidden=\"true\"><h2>Title</h2><p>Body</p></umd-element-modal>"}
+      {"name": "content", "required": true, "description": "Modal content. MUST be a child with slot=\"content\" \u2014 the component renders <slot name=\"content\"> inside its backdrop; unslotted children never display. The slotted panel is unstyled light DOM: the page provides the white box, close button, and typography.", "example": "<umd-element-modal data-layout-hidden=\"true\"><div slot=\"content\"><h2>Title</h2><p>Body</p></div></umd-element-modal>"}
     ],
     "attrs": [
-      {"name": "data-layout-hidden", "type": "boolean", "description": "Initial state. Set to true so the modal starts hidden."},
-      {"name": "data-visual-open", "type": "boolean", "description": "Observed \u2014 setting to true opens the modal."},
-      {"name": "data-visual-closed", "type": "boolean", "description": "Observed \u2014 setting to true closes the modal."}
+      {"name": "data-layout-hidden", "type": "enum", "values": ["true", "false"], "description": "Observed. Start with \"true\" (hidden). The true\u2192false transition opens the modal; false\u2192true closes it. The component resets it to \"true\" when it closes itself (backdrop click / focus-trap escape)."}
     ],
     "configurable": true,
     "page_types": ["landing", "interior"],
-    "notes": "Open/close by mutating the observed attributes from JS (e.g. `el.setAttribute('data-visual-open', 'true')`).",
+    "notes": "Open with el.setAttribute('data-layout-hidden', 'false'); close by setting 'true'. The data-visual-open / data-visual-closed attributes previously documented upstream are NOT implemented; upstream corrected its own docblock to data-layout-hidden in 1.19.x, matching what this registry already recorded. Modal also dispatches modal:show / modal:hide (bubbling, composed) as of 1.19.x. Trigger gotcha: umd-element-call-to-action and umd-element-card-overlay (cta-icon slot) CLONE their child link/button into shadow DOM, so document-level click delegation via e.target.closest() never sees the trigger \u2014 walk e.composedPath() instead. See LAYOUT-PATTERNS.md 'Modal' for the wiring recipe.",
     "source": "npm",
     "priority": 3
   },
@@ -33,11 +31,11 @@
     "description": "Floating scroll-to-top button. Appears after the user scrolls down and smoothly returns to the top when clicked.",
     "slots": [],
     "attrs": [
-      {"name": "data-layout-fixed", "type": "boolean", "description": "Fixed viewport positioning when present; absolute positioning when omitted."}
+      {"name": "data-layout-fixed", "type": "enum", "values": ["true"], "description": "Fixed viewport positioning. IMPORTANT: the DS CSS (web-components.min.css) matches ONLY data-layout-fixed=\"true\" (explicit value) or a bare `fixed` attribute — a valueless boolean data-layout-fixed does NOT match, and the button renders position:static in normal flow. Omit entirely for absolute positioning."}
     ],
     "configurable": true,
     "page_types": ["landing", "interior"],
-    "notes": "Usually placed once per page, near the end of the body.",
+    "notes": "Usually placed once per page, near the end of the body. To pin it, use data-layout-fixed=\"true\" (NOT a valueless data-layout-fixed — that won't match the CSS and the button stays static in flow). DS fixed default is right:40px; bottom:10vh; z-index:9999; 52x52. Override right/bottom in your page <style> to reposition (e.g. right:24px; bottom:24px for a 24px viewport inset).",
     "source": "npm",
     "priority": 3
   },

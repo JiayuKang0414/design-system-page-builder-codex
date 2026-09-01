@@ -6,7 +6,7 @@ A Codex-ready workflow for generating complete, valid HTML pages using the [UMD 
 
 Feed page content or a site URL into Codex and get back a complete, standards-compliant UMD Design System HTML page. The system is built on a verified component registry, a set of composition rules, task recipes, and a ready-to-copy page template.
 
-**Verified registry DS version:** `@universityofmaryland/web-components-library@1.18.12`
+**Current DS version:** `@universityofmaryland/web-components-library@1.19.5` (styles `web-styles-library@1.8.16`)
 
 ## Repository structure
 
@@ -14,6 +14,7 @@ Feed page content or a site URL into Codex and get back a complete, standards-co
 design-system-page-builder/
 ├── README.md                        ← you are here
 ├── AGENTS.md                        ← Codex project instructions
+├── .codex/recipes/                  ← Codex page-planning, building, evaluation, and QA workflows
 ├── registry/                        ← component registry split by category (canonical)
 │   ├── registry-index.json          ← lightweight index of all categories
 │   ├── registry-navigation.json     ← headers, nav items, nav drawer, breadcrumb, footer
@@ -32,11 +33,39 @@ design-system-page-builder/
 ├── RULES.md                         ← composition rules, gotchas, and required CSS patterns
 ├── TEMPLATE.html                    ← copy-paste page skeleton with all critical CSS
 ├── REQUIRED-CSS.md                  ← reference: what each CSS rule does and why
-├── test/                            ← generated test/output pages
+├── LAYOUT-PATTERNS.md               ← HTML recipes for utility classes and multi-component layouts
+├── styles/critical.css              ← canonical CSS, inlined verbatim into every page
+├── scripts/                         ← runtime browser JS shipped into pages
+├── tools/                           ← build-time Python (chrome inliner, theme validator)
+├── templates/project-scaffold/      ← skeleton for a new project repo
+├── images/                          ← shared fallback image library
+├── test/                            ← fixture pages for validating the builder
+├── qa/                              ← component QA pages for DS submodule updates
 └── design-system/                   ← git submodule → UMD-Digital/design-system
     ├── packages/components/         ← component source code
     └── ...
 ```
+
+## Two ways to use it
+
+**As a submodule in a design project** — the normal case. A project repo owns its
+pages, images, briefs, and overrides, and vendors this repo at `page-builder/`
+for the rules, registry, CSS, slash commands, and shared tooling:
+
+```bash
+git submodule add https://github.com/JiayuKang0414/design-system-page-builder-codex.git page-builder
+cp -R page-builder/templates/project-scaffold/. .
+```
+
+See `templates/project-scaffold/SCAFFOLD.md` for the full bootstrap, and
+`CODEX.md` § *Using this repo in a design project* for the conventions. Existing
+consumers: `admissions-design`, `belonging-design`, `strategic-plan-design`, and
+`page-builder-examples`.
+
+**Directly** — for working on the builder itself. `test/` and `qa/` hold fixture
+and component-QA pages used to validate the registry, `critical.css`, and
+component behaviour after a design-system bump. Real design work does not live
+here.
 
 ## Setup
 
@@ -83,9 +112,11 @@ The full `design-system/` directory is large, but having it on disk means Codex 
 
 2. **Rules** (`RULES.md`) — Composition patterns, CSS requirements, spacing utilities, and hard-won lessons from testing. Covers critical CSS load order, `container-type` splits, pathway background requirements, theme cascade behavior, and more.
 
-3. **Template** (`TEMPLATE.html`) — A complete page skeleton with all required CSS pre-assembled. Copy it, fill in the content sections, and you have a working page.
+3. **Recipes** (`.codex/recipes/`) — Planning, building, recreation, evaluation, recommendation, and QA workflows adapted for Codex.
 
-4. **CSS Reference** (`REQUIRED-CSS.md`) — Documents every CSS rule in the template: what it does, why it's needed, and what breaks without it.
+4. **Template** (`TEMPLATE.html`) — A complete page skeleton with all required CSS and shared script references pre-assembled.
+
+5. **CSS Reference** (`REQUIRED-CSS.md`) — Documents every CSS rule in the template: what it does, why it's needed, and what breaks without it.
 
 ## Key principles
 

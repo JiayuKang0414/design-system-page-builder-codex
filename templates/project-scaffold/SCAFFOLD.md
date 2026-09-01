@@ -1,0 +1,191 @@
+# Project scaffold
+
+The starting skeleton for a **new design project** built on the page builder —
+a repo of its own that vendors this one as a `page-builder/` submodule.
+
+This file documents the scaffold. It is **not** copied into the new project.
+
+## What a project repo looks like
+
+```
+<project>/
+├── AGENTS.md          project rules; layers on page-builder/AGENTS.md
+├── README.md          human-facing orientation
+├── OVERRIDES.md       project-specific shadow injections and CSS overrides
+├── pages/             the pages, one directory per site section
+├── .github/           the Pages deploy workflow
+├── shared/            header, footer, <head> meta, access gate, and their companions
+├── briefs/            page briefs and source notes
+├── images/            project-owned images (logos, photography)
+└── page-builder/      submodule → design-system-page-builder
+```
+
+The three intake modes — recreating an existing site closely, overhauling one,
+or building something new — all produce this same layout. They differ only in
+where content and structure come from, which is a question for `plan-page.md`,
+`recreate-page.md`, and the build recipes, not for the repo skeleton.
+
+## Bootstrap
+
+From the directory that will hold the new repo:
+
+```bash
+PROJECT_SLUG=belonging          # repo/dir name, lowercase
+PROJECT_NAME="Belonging"        # human name used in prose
+
+git init "$PROJECT_SLUG-design" && cd "$PROJECT_SLUG-design"
+git submodule add https://github.com/JiayuKang0414/design-system-page-builder-codex.git page-builder
+cp -R page-builder/templates/project-scaffold/. .
+rm SCAFFOLD.md
+```
+
+Substitute the two tokens **before** creating any page, so only scaffold files
+are touched. Target them by name — a blanket `s/{{.*}}//` also destroys
+`{{ROOT}}`, which is a real runtime token the chrome depends on and must
+survive into the committed files:
+
+```bash
+grep -rl '{{PROJECT_NAME}}\|{{PROJECT_SLUG}}' . --exclude-dir=page-builder --exclude-dir=.git \
+  | tr '\n' '\0' \
+  | xargs -0 sed -i '' -e "s|{{PROJECT_NAME}}|$PROJECT_NAME|g" -e "s|{{PROJECT_SLUG}}|$PROJECT_SLUG|g"
+
+# Must print nothing but {{ROOT}} occurrences:
+grep -rno '{{[A-Z_]*}}' . --exclude-dir=page-builder --exclude-dir=.git | grep -v '{{ROOT}}'
+```
+
+(`grep -rlZ | xargs -0` does not work here — BSD grep emits newline-separated
+names for `-lZ`, so sed receives every path as one argument and fails.)
+
+Now create the first page and build the chrome into it:
+
+```bash
+cp page-builder/TEMPLATE.html pages/index.html
+python3 page-builder/tools/build-chrome.py
+git add -A && git commit -m "Initial scaffold from page-builder templates/project-scaffold"
+```
+
+`TEMPLATE.html` ships a placeholder header and footer; the first build-chrome
+run **replaces** them with the project's `shared/` chrome and reports
+`header:migrated; footer:migrated`. That is the expected first-run output, not a
+warning.
+
+`TEMPLATE.html` also carries its own page-authoring placeholders —
+`{{PAGE_TITLE}}`, `{{HEADLINE}}`, `{{IMAGE_URL}}`, `{{CTA_URL}}` and friends.
+Those are **page-level**, filled in as you write each page, and are unrelated to
+the two project tokens above. That is why the verification grep runs before any
+page exists.
+
+## Then
+
+1. Replace the placeholder nav items, logo, and footer image in `shared/`, and
+   rename the `example-section` placeholders to this project's real sections.
+2. Re-run `python3 page-builder/tools/build-chrome.py` after every `shared/` edit.
+3. Read `page-builder/AGENTS.md` for the canonical workflow and `page-builder/CODEX.md`
+   for detailed design-system guidance, then this project's `AGENTS.md` for what layers on top.
+
+Until step 1, a fresh page logs one expected 404 for
+`images/logos/<slug>-logo.svg` — the header's `onerror` fallback catches it and
+renders the UMD wordmark, so the page is correct meanwhile. It clears the moment
+you drop the real logo in.
+
+## The seven chrome regions
+
+| Region | Source | Spliced |
+|---|---|---|
+| `head-meta` | `shared/head-meta.html` | site-wide meta, after the viewport meta |
+| `header` | `shared/header.html` | replaces the header stack |
+| `footer` | `shared/footer.html` | replaces `umd-element-footer` |
+| `chrome-css` | `shared/chrome.css` | `<style>` before `</head>` — not shipped; add only if needed |
+| `gate` | `shared/gate.html` | access-gate lock + sign-in, before `</head>` |
+| `page-scripts` | `shared/page-scripts.html` | replaces the end-of-body `scripts/*.js` tags |
+| `chrome-scripts` | `shared/chrome-scripts.html` | shadow injections before `</body>` |
+
+Delete any file the project does not need — the inliner skips a region whose
+source is absent, and **retires** it: the next build strips the last generated
+block out of every page, so deleting `shared/gate.html` is how a project stops
+being gated. The scaffold ships no `shared/chrome.css` at all: the rules that
+used to live there (utility-nav flat-link styling) are in `critical.css` now, so
+most projects need no chrome CSS of their own.
+
+`head-meta` ships a `noindex, nofollow` pair, because a design project is a
+prototype or client review until someone decides otherwise. **Delete it when the
+site goes live for real.** It is meta rather than a `robots.txt` because a
+`robots.txt` is only fetched from a HOST root, and a GitHub Pages project site
+is served from `/<repo>/` — the file would never be read.
+
+`page-scripts` matters more than it looks. `TEMPLATE.html` ships
+`<script src="../scripts/grid-animations.js">`, which is correct only for a page
+in the page-builder repo's own `test/` directory. In a project it has to point
+at `page-builder/scripts/`, one extra `../` deeper for a page in a section
+folder — so hand-editing it is how a site ends up with grid animations silently
+dead on half its pages.
+
+## The access gate
+
+The scaffold ships `shared/gate.html` **enabled but with no accounts**, so a
+project is locked from its first commit and cannot be published open by
+forgetting a step. Until an account exists, every page shows "This prototype
+gate is not configured."
+
+Add the account you will share with reviewers:
+
+```bash
+python3 page-builder/tools/gate.py --write shared/gate.html
+python3 page-builder/tools/build-chrome.py
+```
+
+It prompts for a username and password without echoing them and stores a
+PBKDF2-SHA256 hash. Never type a password into `shared/gate.html` by hand.
+
+**A project meant to be public deletes `shared/gate.html`** and re-runs
+build-chrome; the region is stripped from every page.
+
+### What the gate is and is not
+
+It keeps a GitHub Pages prototype blank for anyone without the credentials, and
+out of search results. That is the whole job: casual visitors and crawlers.
+
+Those are two separate regions and the `noindex` pair in
+`shared/head-meta.html` is the one that does the search half. Keep both, or a
+prototype ends up gated but still indexable.
+
+It is **not** access control. The check runs in the browser, so the markup is
+retrievable with `curl` by anyone holding the URL, and the published hash can be
+attacked offline. So:
+
+- **Keep the project repo private.** A public repo publishes the same pages a
+  second time, where no gate applies at all.
+- **Put nothing behind it that would matter if it leaked** — no unreleased
+  announcements, no real student data, nothing under FERPA.
+- **Use a password with real entropy, used nowhere else.**
+
+`page-builder/scripts/gate.js` carries the full reasoning at the top.
+
+## Publishing to GitHub Pages
+
+The scaffold ships `.github/workflows/pages.yml`, which deploys every push to
+`main`. Two things about it are not obvious:
+
+**The repo has to be public.** GitHub Pages is unavailable for private
+repositories on a personal Free plan, and `configure-pages` fails with
+`Resource not accessible by integration` — a repo-visibility problem that no
+edit to the workflow fixes. A prototype is kept unseen by `shared/gate.html`
+and the noindex pair in `shared/head-meta.html`, **not** by the repo being
+private. If it still fails once public, check Settings → Actions → General →
+Workflow permissions is "Read and write".
+
+**The workflow trims the artifact before uploading.** `upload-pages-artifact`
+ships the whole working tree, so without that step the page builder's own
+`test/` and `qa/` fixtures get published inside the project site — ungated, and
+carrying no noindex. `page-builder/scripts/` and `page-builder/images/` are kept
+because pages load them at runtime; the checkout is deliberately not recursive,
+since page-builder's own `design-system` submodule is a 35k-file reference
+nothing serves.
+
+## Keeping the scaffold honest
+
+The scaffold ships **no copy of `TEMPLATE.html`, `critical.css`, or the
+registry** — those live in the submodule and a duplicate here would go stale
+the first time the design system moves. `pages/index.html` is created by
+copying `page-builder/TEMPLATE.html` at bootstrap time, so a new project always
+starts from the current skeleton.

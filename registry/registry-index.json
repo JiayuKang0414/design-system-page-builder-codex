@@ -1,9 +1,9 @@
 {
   "_meta": {
     "version": "1.1.0",
-    "components_version": "1.18.12",
+    "components_version": "1.19.5",
     "source_package": "@universityofmaryland/web-components-library",
-    "last_verified": "2026-06-03",
+    "last_verified": "2026-08-21",
     "cdn_base": "https://unpkg.com/@universityofmaryland/web-components-library@1.18.12/dist",
     "notes": "All slots and attributes verified directly from the design-system submodule source. Do not re-derive for known components \u2014 use this registry.",
     "component_count": 60,
@@ -144,10 +144,11 @@
     "heroes": {
       "background_hero_small": {
         "component": "hero-standard",
-        "attrs": { "data-display": "overlay", "data-layout-height": "small" },
+        "attrs": { "data-layout-height": "small" },
+        "note": "Do NOT add data-display — omitting it is the background hero default. data-display=\"overlay\" is an explicit design choice for a different visual mode (see RULES.md §22).",
         "variants": {
-          "left_text": "data-display=overlay + data-layout-height=small",
-          "centered_text": "data-display=overlay + data-layout-height=small + data-layout-text=center"
+          "left_text": "data-layout-height=small",
+          "centered_text": "data-layout-height=small + data-layout-text=center"
         }
       },
       "minimal_hero": {

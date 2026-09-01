@@ -1,6 +1,6 @@
 # Sample Interior Page
 
-Build a sample/test UMD interior/subpage from this fixed recipe — content from the "Traditions of the Past" page (`https://umd.edu/about/traditions-of-the-past`), output to `test/test-interior-page.html`. This command does NOT take a brief or fresh content. For a brief-driven interior page, use `/build-interior-page` instead. For converting a real existing page, use `/recreate-page`.
+Build a sample/test UMD interior/subpage from this fixed recipe — content from the "Traditions of the Past" page (`https://umd.edu/about/traditions-of-the-past`), output to `test/test-interior-page.html`. This recipe does NOT take a brief or fresh content. For a brief-driven interior page, use `build-interior-page.md` instead. For converting a real existing page, use `recreate-page.md`.
 
 
 ## Setup

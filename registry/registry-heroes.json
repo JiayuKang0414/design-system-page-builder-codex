@@ -1,9 +1,9 @@
 {
   "_meta": {
     "version": "1.0.0",
-    "components_version": "1.18.12",
+    "components_version": "1.19.5",
     "source_package": "@universityofmaryland/web-components-library",
-    "last_verified": "2026-06-03",
+    "last_verified": "2026-08-21",
     "cdn_base": "https://unpkg.com/@universityofmaryland/web-components-library@1.18.12/dist",
     "notes": "All slots and attributes verified directly from NPM package source. Do not re-derive for known components \u2014 use this registry.",
     "component_count": 21,
@@ -97,7 +97,7 @@
       {
         "name": "data-animation",
         "type": "boolean",
-        "description": "Include attribute (no value) to enable entrance animations."
+        "description": "Entrance animation is ON by default when this attribute is absent. Set data-animation=\"false\" to disable. CAUTION: a bare attribute (no value) reads as NOT \"true\" and DISABLES the animation in v1.18.12 \u2014 never include it valueless; data-animation=\"true\" is the same as omitting."
       },
       {
         "name": "data-layout-height",

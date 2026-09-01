@@ -1,6 +1,6 @@
 # Sample Landing Page
 
-Build a sample/test UMD landing page from this fixed recipe — known set of design system components, content from `https://gradschool.umd.edu/`, output to `/test/test-landing.html`. This command does NOT take a brief or fresh content. For a brief-driven landing page, use `/build-landing-page` instead. For converting a real existing page, use `/recreate-page`.
+Build a sample/test UMD landing page from this fixed recipe — known set of design system components, content from `https://gradschool.umd.edu/`, output to `test/test-landing.html`. This recipe does NOT take a brief or fresh content. For a brief-driven landing page, use `build-landing-page.md` instead. For converting a real existing page, use `recreate-page.md`.
 
 
 ## Setup

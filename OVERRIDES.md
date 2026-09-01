@@ -64,7 +64,44 @@ Injected after `customElements.whenDefined('umd-element-card-overlay')`, applied
 
 ---
 
+## Quote size-large polyfill
+
+**STATUS: obsolete at 1.19.5 — keep only for pages still pinned to 1.18.12.**
+
+**Component:** `umd-element-quote` with `data-visual-size="large"`. The attribute is documented in `registry/registry-quote.json` and intended to enlarge the quote text. **v1.18.12 does not render it** — the shadow keeps the default `.quote-container-quote` font size regardless. Used by the under-150-character quote rule (see `RULES.md` "Short quotes use data-visual-size").
+
+**As of 1.19.5 the attribute renders natively** and this injection is a no-op producing the identical 32px (verified 2026-08-28: 32px large vs 22px default at desktop, 22px vs 18px at mobile, injection absent). Do not add it to new pages. Drop it from an existing page when that page's cdn.js pin moves to 1.19.5.
+
+**Override:** Shadow-inject the intended larger type scale onto `.quote-container-quote`, gated to the same breakpoints the component uses (`large.min` = 650px, `desktop.min` = 1024px). Applied to every `umd-element-quote[data-visual-size="large"]` after `customElements.whenDefined('umd-element-quote')`.
+
+```css
+.quote-container-quote { font-size: 24px !important; line-height: 1.3em !important; }
+@media (min-width: 650px)  { .quote-container-quote { font-size: calc(24px + 0.5vw) !important; } }
+@media (min-width: 1024px) { .quote-container-quote { font-size: 32px !important; } }
+```
+
+**Upstream candidate:** implement `data-visual-size="large"` in the quote composite so the attribute scales `.quote-container-quote` natively; retire this injection once it ships.
+
+**Pages using this:**
+- strategic-plan-design `pages/index.html` — President Pines quote inside `umd-layout-image-expand`. Still needed: that page loads cdn.js **1.18.12**. Remove the injection when it is bumped to 1.19.5.
+- ~~page-builder-examples `engineering/index.html`~~ — removed; that page is on 1.19.5 and never needed it.
+
+---
+
 # Page-built components
+
+## .strategic-commitments-map — interactive overlapping commitment links
+
+**DS counterpart:** None. `umd-element-section-intro` provides the section heading, while the interactive diagram is a site-specific navigation graphic.
+
+**Why a page-built version was needed:** The Strategic Plan identity uses four overlapping commitment circles around a central "Fearlessly Forward" circle. Each circle must remain an independent link and rise above its siblings when hovered or keyboard-focused. No Design System component provides this overlapping spatial relationship or interaction.
+
+**Class definition:** `.strategic-commitments-map` establishes a responsive square positioning context. Five `.strategic-commitments-circle` links use percentage-based dimensions and positions; commitment modifier classes provide the UMD red, gold, gray, and black treatments. Hover and `:focus-visible` scale the active circle and raise its `z-index`, with transitions disabled for `prefers-reduced-motion`.
+
+**Pages using this:**
+- `examples/strategic-plan.html` — Our Strategic Commitments section immediately after the Overview pathway
+
+---
 
 ## .umd-action-outline-block — full-width outline CTA
 
@@ -75,4 +112,4 @@ Injected after `customElements.whenDefined('umd-element-card-overlay')`, applied
 **Class definition:** Light + dark variants. `.umd-action-outline-block` is the light version (white background, dark text); add `.dark` for the dark-section variant (transparent background, white text/border with white-fill hover).
 
 **Pages using this:**
-- [examples/search.html](examples/search.html) — "Show more / Show less" toggle for the AI Summary block (full-width outline button)
+- `examples/search.html` in the `page-builder-examples` repo — "Show more / Show less" toggle for the AI Summary block (full-width outline button)
