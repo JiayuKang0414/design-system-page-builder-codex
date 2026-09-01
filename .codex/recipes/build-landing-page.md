@@ -49,7 +49,7 @@ Honor these in both modes:
 
 ## Optional reference page(s) step (brief mode only; skip if no reference URL)
 
-Only when the user supplies an explicit reference URL to **mirror** (not just a site to match — that survey already happened in `plan-page.md`). Before any analysis or building, spawn a subagent when available, or perform the download directly, saving source assets into `tmp/`:
+Only when the user supplies an explicit reference URL to **mirror** (not just a site to match — that survey already happened in `plan-page.md`). Before any analysis or building, download the source assets into `tmp/`:
 
 1. Create the directory `tmp/` if it does not exist.
 2. Download the full HTML of the source URL and save it as `tmp/source.html`.
@@ -62,7 +62,7 @@ Only when the user supplies an explicit reference URL to **mirror** (not just a 
 5. Use `curl` or `wget` for downloads. Skip assets that return non-200 status — log skipped URLs to `tmp/skipped-assets.txt`.
 6. Return a summary of what was downloaded.
 
-Wait for the subagent to complete before proceeding.
+Complete the download before proceeding.
 
 ---
 
@@ -151,9 +151,24 @@ rm -rf tmp
 
 ---
 
+## Attribute check (after writing)
+
+Run the registry-driven `data-theme` validator on the new page:
+
+```bash
+python3 tools/check-themes.py <output-file>
+```
+
+- **ERROR** — the value is not in the design system's theme vocabulary, i.e. a typo. Fix before reporting success. These are the ones worth tooling for: a component that ignores an unrecognized `data-theme` renders a misspelled value *identically* to a correct one (pathway `whte` vs `white`), so the mistake is invisible on the page and in a screenshot.
+- **WARNING** — a real theme word the registry does not list for that component. Usually inert; confirm it is deliberate. If it turns out to be genuinely supported, update `registry/` rather than silencing the warning.
+
+Exit code is non-zero only for errors, so warnings will not block a build.
+
+---
+
 ## Harvest overrides (final step)
 
-After the page is written and verified, spawn an `Explore` subagent to scan the new HTML file and update `OVERRIDES.md`. Brief it like this:
+After the page is written and verified, scan the new HTML file and update `OVERRIDES.md`. Use this checklist:
 
 > Scan `<output-path>` for two things:
 > 1. **Shadow injections** — IIFEs that call `el.shadowRoot.appendChild(<style>)`. Capture the target component tag, the CSS string injected, and the leading comment that explains why.

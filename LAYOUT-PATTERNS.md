@@ -38,7 +38,9 @@ Two-column staggered layout. Odd children are offset upward, even children are p
 
 **Lock:** `umd-layout-space-horizontal-normal` (1280px).
 
-**When to use:** 2–4 overlay cards or person bio components on landing pages. Works especially well when cards have equal dimensions and strong images. Commonly used with 4 cards (fills both columns evenly) but 2 cards is valid.
+**When to use:** 2–4 overlay cards, person bio components, or `umd-element-card-icon` on landing pages. Works especially well when cards have equal dimensions and strong images. Commonly used with 4 cards (fills both columns evenly) but 2 cards is valid.
+
+**Not only full-width sections.** Masonry is a plain two-column grid underneath, so it also works inside a narrower container — notably the `static-column` of `umd-element-sticky-columns`, where the headline and intro copy stay pinned while the cards stagger past them. Verified at a 629px static column (two 294px columns, 40px gap) on a 1440px viewport.
 
 **When NOT to use:** Mixed content types, lists, or cards where visual hierarchy matters — use `umd-layout-grid-gap-two` for plain two-column grids.
 
@@ -99,6 +101,28 @@ Add per-page CSS to set card height (the stagger depends on cards having a defin
 }
 ```
 
+This applies to **every** child type, not just overlay cards. `umd-element-card-icon`
+in particular sizes to its own copy, so without a `min-height` the offsets read as
+ragged edges rather than a zigzag. Scope the rule to the grid so other cards on the
+page are unaffected:
+
+```css
+.my-icon-grid umd-element-card-icon {
+  min-height: 220px;
+}
+@media (min-width: 768px) {
+  .my-icon-grid umd-element-card-icon { min-height: 260px; }
+}
+```
+
+**Grid rows are equal-height — mind which cards share one.** Masonry offsets the
+children with margins, but they still sit in CSS grid rows, so a card that is much
+taller than the rest stretches whichever card shares its row to match. With an odd
+number of children, put the tallest card **last**: it lands alone at the foot of
+column 1 and stretches nothing. Moving it to an even position balances the column
+bottoms but leaves its rowmate as a mostly-empty box — usually the worse trade. If
+every card must share a row, shorten the outlier's copy instead.
+
 **Stagger mechanics** (for reference — defined in `critical.css`):
 
 | Child position | Desktop offset |
@@ -107,6 +131,39 @@ Add per-page CSS to set card height (the stagger depends on cards having a defin
 | 2nd (even) | `margin-top: 40px` (pushed down) |
 | 3rd (odd) | `margin-top: -40px` (pulled up) |
 | 4th (even) | `margin-top: 0` |
+
+**Icon cards in a sticky column.** Headline and intro copy pin in the sticky column
+while the icon cards stagger past them in the static column. Note the tallest card
+sits last, and the icons carry an intrinsic `width`/`height` — `card-icon` caps its
+image children at `max-height: 120px` in shadow, so an SVG sized under that cap
+controls its own render and needs no shadow injection.
+
+```html
+<section class="umd-layout-vertical-landing">
+  <umd-element-sticky-columns class="umd-layout-space-horizontal-larger" data-layout-position="100px">
+    <div slot="sticky-column">
+      <h2 class="umd-sans-largest-uppercase mb-md">Application Requirements</h2>
+      <div class="umd-text-rich-advanced mb-sm">
+        <p>Intro copy that stays pinned while the cards scroll past.</p>
+      </div>
+    </div>
+    <div slot="static-column">
+      <div class="umd-layout-grid-masonry my-icon-grid">
+        <umd-element-card-icon>
+          <img slot="image" src="/icons/icon-english.svg" alt="" />
+          <h3 slot="headline">4 Years of English</h3>
+        </umd-element-card-icon>
+        <!-- … three more short cards … -->
+        <umd-element-card-icon>
+          <img slot="image" src="/icons/icon-math.svg" alt="" />
+          <h3 slot="headline">4 Years of Math</h3>
+          <p slot="text">The one long description — last, so it shares a row with nothing.</p>
+        </umd-element-card-icon>
+      </div>
+    </div>
+  </umd-element-sticky-columns>
+</section>
+```
 
 ---
 
@@ -739,6 +796,61 @@ A separate headline above the grid uses both the horizontal lock and the vertica
 </section>
 ```
 
+### Light background — two-column image + text (zig-zag)
+
+Pairs a rich-text column (headline, rule, body, CTA) with a stacked image column, alternating the column order section-to-section for a zig-zag rhythm. Build it from `umd-layout-grid-gap-two` inside the 992px lock, with the image in a `figure.umd-layout-alignment-block-stacked`.
+
+The section headline is a true large headline (`umd-sans-extralarge-bold`, 32px), so it must sit **outside** the rich-text wrapper — a `umd-sans-*` size collapses to 18px inside the block (see RULES.md §18).
+
+```html
+<div class="umd-layout-space-horizontal-small">
+  <div class="umd-layout-grid-gap-two">
+
+    <!-- Text column: headline sits ABOVE the rich-text block -->
+    <div>
+      <h2 class="text-black umd-sans-extralarge-bold umd-layout-space-vertical-headline-large">
+        Section Headline
+      </h2>
+      <div class="umd-text-rich-advanced">
+        <hr>
+        <p>Body copy for this section.</p>
+        <div class="umd-layout-grid-inline-tablet-rows">
+          <umd-element-call-to-action data-display="secondary">
+            <a href="/page">CTA Label</a>
+          </umd-element-call-to-action>
+        </div>
+      </div>
+    </div>
+
+    <!-- Image column -->
+    <figure class="umd-layout-alignment-block-stacked">
+      <img src="/image.jpg" alt="Description">
+    </figure>
+
+  </div>
+</div>
+```
+
+To alternate the zig-zag, swap the order of the text `<div>` and the `<figure>` in the next section.
+
+This pattern needs two page-level CSS rules — neither is in the base bundles or `critical.css`:
+
+```css
+/* Let the 1fr tracks shrink; otherwise a wide image's min-content forces
+   its grid track to the image's intrinsic width and unbalances the columns. */
+.umd-layout-grid-gap-two > * { min-width: 0; }
+.umd-layout-grid-gap-two figure.umd-layout-alignment-block-stacked img {
+  display: block; width: 100%; height: auto;
+}
+
+/* The inlined critical CSS gives <hr> no border (UA default is an inset ~2px
+   grey). Style it as a 1px black rule, and add <hr> as the FIRST child of the
+   rich-text block so its 24px above/below spacing comes from the wrapper. */
+.umd-layout-grid-gap-two .umd-text-rich-advanced hr {
+  border: 0; border-top: 1px solid #000; height: 0;
+}
+```
+
 ---
 
 ## Layout Classes Used in These Patterns
@@ -1369,6 +1481,22 @@ Rules:
   filterable list re-trigger awkwardly when items toggle.
 - The count element can live anywhere; `aria-live="polite"` announces updates.
 - Text search matches against each item's full `textContent` (case-insensitive).
+
+### Facet variant — multi-select checkbox groups + A–Z directory
+
+When a listing needs **multiple faceted dimensions** (e.g. type + college + interest) rather than one `<select>`, and/or an **alphabetical directory** with a jump-nav, extend the band with these DS pieces. This is a bespoke-JS variant (the shipped `filter-band.js` handles the single-select case); the filter is still client-side over an in-memory/embedded data array. First used on the admissions Programs page.
+
+Reusable DS-class choices (all upstream — no new component CSS):
+
+- **Rail heading:** `.umd-tailwing-right-headline` (element.min.css) — small uppercase label with a thin rule trailing to the right. **Requires a `<span>` child** (its inherited white background masks the line behind the text) and adds `margin-top:40px` to the next element. Alternative to `.umd-text-line-trailing-light` used above.
+- **Search input:** a **bare `<input>` needs no box CSS** — the global `input {}` rule (base.min.css) already gives white bg, `1px solid #E6E6E6`, `12px 16px` padding, full width. Wrap the input + a red square submit button in a `.umd-layout-background-highlight-light` form to get the gray `#F1F1F1` panel + `2px solid #E21833` left rule.
+- **Checkbox option rows:** `.umd-field-checkbox-wrapper` on each `<label>` (font-weight:400 — see RULES §37; bare labels render bold). Group them under a toggle button and animate open/closed with `grid-template-rows: 0fr → 1fr`. Put per-option counts in `.umd-sans-smaller`.
+- **Active-filter chips ("Filtered by:"):** wrap the removable pills in `<span class="umd-pill-list">` (element.min.css) — each child renders as a `#FAFAFA` 12px chip (hover yellow `#FFD200` on `<a>`; add a page hover rule for `<button>`). Neutralize the container's `margin-top:-8px` hack with flex gap. Put the label × in an inner `<span>` (DS `> span{display:flex;gap:4px}`).
+- **A–Z quick-nav + letter headings:** the `.umd-campaign-*` italic display faces make a good alphabet nav — `.umd-campaign-extrasmall` (32px) for the jump-nav row, `.umd-campaign-small` (44px desktop) for in-list letter headings; recolor to Maryland red. Bucket the sorted array by `name[0]`, render sticky letter sections (`scroll-margin-top` to clear a sticky nav), and dim letters with no matches. Recompute active letters on every filter change.
+- **Row meta with no badge slot:** `umd-element-card[data-display="list"]` has no dedicated badge/tag slot — repurpose its **`date` slot** for a short type/category label (`<p slot="date">Major | Minor</p>`, not `<time>`).
+- **Reset control:** if you use `umd-element-call-to-action data-display="outline"` for "Reset", note it clones its child into shadow DOM — a native `type="reset"` won't reach the light-DOM form; catch the click on a light-DOM wrapper (or walk `e.composedPath()`) and clear state explicitly. See the modal registry note.
+
+Filter logic that matches the UMD "experts" UX: **AND across groups, OR within a group**, plus a case-insensitive substring search — keep an item iff it passes every *active* group (a group with no checked boxes is skipped).
 
 ## Modal (`umd-element-modal`) — content-detail dialogs
 

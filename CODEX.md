@@ -6,6 +6,7 @@ The `.codex/recipes/` directory contains portable task recipes for this project.
 
 | Task | Recipe file |
 |---|---|
+| Stand up a **whole site / new project repo** (front door) | `.codex/recipes/new-project.md` |
 | Plan a page from a brief **or raw content** (front door) | `.codex/recipes/plan-page.md` |
 | Build a sample/test landing page (fixed recipe) | `.codex/recipes/sample-landing-page.md` |
 | Build a sample/test interior page (fixed recipe) | `.codex/recipes/sample-interior-page.md` |
@@ -19,11 +20,12 @@ The `.codex/recipes/` directory contains portable task recipes for this project.
 **Do not build pages from scratch** when a recipe covers the task. The recipe defines the required sections, content source, file naming, image sources, spacing rules, and output path. Follow it exactly.
 
 To choose between the page-building recipes:
-- **`plan-page.md`** — the **front door** when you have content (or a topic) but not a finished plan. It detects brief vs raw content, surveys the site (existing) or peers (new) for visual tone, derives an ordered **Page Plan** (sections → components, copy source, image source), self-validates against `evaluate-design.md`, then hands off to `build-landing-page.md` or `build-interior-page.md`.
-- **`build-landing-page.md`** / **`build-interior-page.md`** — render a page. The preferred path is Page Plan mode; both also accept a raw brief directly for simple pages. Output goes to `examples/`.
-- **`recreate-page.md`** — convert a real existing page, downloading source assets first and mirroring its structure.
+- **`new-project.md`** — the **site-level front door** for a whole site or multi-page section. It scaffolds a project repo, derives the IA, builds shared chrome once, and hands individual pages to `recreate-page.md` or `plan-page.md`.
+- **`plan-page.md`** — the **page-level front door** when content exists but structure is not decided. It derives and validates a Page Plan before handing off to a build recipe.
+- **`build-landing-page.md`** / **`build-interior-page.md`** — render a planned page or a simple brief.
+- **`recreate-page.md`** — convert a real existing page, downloading source assets first and mirroring its structure. It can target a project repo or the examples repo.
 - **`sample-landing-page.md`** / **`sample-interior-page.md`** — fixed-recipe showcase pages; output to `test/`.
-- **`qa-component.md`** — focused component QA page for verifying a Design System submodule update; output to `qa/`.
+- **`qa-component.md`** — focused component QA for a Design System submodule update; output to `qa/`.
 
 `plan-page.md` plans but does not render or harvest; it delegates both to a build recipe. The build and URL-driven recipes run a final harvest step that updates `OVERRIDES.md` with any shadow injections or page-built classes the new page introduced. The sample and QA recipes skip this step.
 
@@ -31,11 +33,57 @@ To choose between the page-building recipes:
 
 | Folder | What lives here | Written by |
 |---|---|---|
-| `examples/` | Realistic pages built from briefs or real URLs — for demos and client review | build/recreate recipes |
+| A project repo (`<name>-design`) | Real design work — a whole site or section, in its own repo vendoring this one | `new-project.md`, then `recreate-page.md` or `plan-page.md` |
+| `page-builder-examples` repo | Realistic one-off pages from briefs or URLs | landing, interior, and recreate recipes |
+| `examples/` in this fork | Existing fork-specific demos retained for compatibility | legacy/local workflows |
 | `test/` | Fixed-recipe fixture pages — for validating the page builder itself | sample recipes |
 | `qa/` | Isolated component test pages — for visually verifying DS submodule updates | QA recipe |
 
 Never write QA pages to `examples/` or `test/`, and never write demo/fixture pages to `qa/`.
+
+`test/` and `qa/` are fixtures for validating the builder itself. Real design work never lands here — it goes to a project repo (below) or to `page-builder-examples`.
+
+## Using this repo in a design project
+
+Real design projects live in their own repo and vendor this one as a submodule at `page-builder/`: `admissions-design`, `belonging-design`, `strategic-plan-design`, and `page-builder-examples` all do. Those repos own their pages, images, briefs, and overrides; this repo owns the rules, registry, CSS, commands, and shared tooling.
+
+**Starting a new project:** copy `templates/project-scaffold/` — it carries the `pages/ + shared/ + images/ + briefs/` skeleton, a project `AGENTS.md`/`README.md`/`OVERRIDES.md`, and starter chrome partials. `templates/project-scaffold/SCAFFOLD.md` has the bootstrap steps. Do not hand-roll a project layout; three projects did and diverged three ways.
+
+All three kinds of project — closely recreating an existing site, overhauling one, and building something new — use that same scaffold. They differ only in where content and structure come from, which is `plan-page.md`'s and `recreate-page.md`'s business, not the repo layout's.
+
+**Shared chrome.** A project keeps its header, footer, and site-wide `<head>` meta (`shared/head-meta.html`) once, in `shared/`, and inlines them into every page with `tools/build-chrome.py`. Never copy chrome between pages, and never hand-edit chrome inside a page — it sits between `SHARED:<key>:START`/`:END` markers and the next build overwrites it.
+
+| Tool | What it does |
+|---|---|
+| `tools/build-chrome.py` | Splices a project's `shared/` chrome into every page under `pages/`. `--check` exits non-zero if any page is stale. |
+| `tools/chrome.py` | The library behind it — region contract, `{{ROOT}}` depth expansion, contextual-drawer stamping. Import it from a project's own page generators so both paths emit identical bytes. |
+| `tools/check-themes.py` | Registry-driven `data-theme` validator. |
+| `tools/gate.py` | Manages the accounts on a project's prototype access gate. Prompts for the password; stores a PBKDF2 hash. |
+
+**Prototype access gate.** A project published to GitHub Pages for client
+review keeps `shared/gate.html`, which blanks every page until a reviewer signs
+in with shared credentials; `scripts/gate.js` is the implementation and
+`tools/gate.py` manages the accounts. The scaffold ships it **enabled with no
+accounts**, so a new project is locked from its first commit — a project meant
+to be public deletes the file and re-runs `build-chrome.py`, which retires the
+region from every page.
+
+The gate is only half of keeping a prototype unseen, and not the half that does
+search. `shared/head-meta.html` carries the `noindex` pair that keeps the site
+out of an index; the gate blanks the pages for someone who has the URL anyway. A
+prototype wants both, so **a project that gets a `gate.html` gets a
+`head-meta.html`** — check for it rather than assuming, since projects predating
+that region have neither.
+
+It is deliberately a *casual-visitor and crawler* barrier, not access control:
+the check runs in the browser, so page markup is retrievable with `curl` by
+anyone holding the URL. **Project repos using it must be private**, and nothing
+that would matter if it leaked belongs behind it. Do not describe it to anyone
+as securing a page. See the header comment in `scripts/gate.js`.
+
+**Paths in shared files use `{{ROOT}}`, never `../`.** Project pages sit at more than one depth, so a fixed prefix is wrong on half of them. This applies to end-of-body scripts too: `TEMPLATE.html` ships `src="../scripts/grid-animations.js"`, which is correct only for a page in this repo's `test/` — a project references it as `{{ROOT}}page-builder/scripts/...` from `shared/page-scripts.html`.
+
+**Never commit project-specific work into this repo.** Project images, chrome, and overrides belong in the project. This submodule is shared by every project.
 
 ## Source of truth hierarchy
 
@@ -50,6 +98,7 @@ Each file has a distinct role — don't duplicate rules across them. When a topi
 7. **`.codex/recipes/evaluate-design.md`** — design-judgment checks for catching design mistakes (variety, rhythm, dark-theme overuse, watermark adjacency). Not a hard-rule enforcer; complements `RULES.md`.
 8. **`OVERRIDES.md`** — page-specific deviations (shadow injections, page-built classes). Append-only log, not a rule source.
 9. **`REQUIRED-CSS.md`** — commentary on *why* each CSS rule group is needed (no CSS to copy).
+10. **`QA-REFERENCE.md`** — how to check the design system's own QA site (`qa-designteam.umd-servd.com`) for how a component is *supposed* to render. Consult it **before** recording any DS behaviour as broken; it outranks the notes in this repo, which are a translation and can go stale.
 
 ## Logos
 
@@ -72,6 +121,30 @@ Never use a broken or placeholder logo image. Use these local fallbacks whenever
 
 `this.onerror=null` prevents an infinite loop if the fallback also fails.
 
+### A reversed (white) logo is not a broken logo — `onerror` will not save you
+
+Many UMD sites put their department logo on a **dark** header, so the only file
+they publish is the reversed/white variant. `umd-element-navigation-header` has
+**no dark theme** — it is white — so that file renders invisible.
+
+It returns HTTP 200, so `onerror` never fires. Nothing errors, nothing is
+missing from the network log, and the header just looks like it has no logo.
+Check the fills before trusting a downloaded logo:
+
+```bash
+grep -o 'fill="[^"]*"' logo.svg | sort | uniq -c   # mostly #FFF/#FEFEFE = reversed
+```
+
+Recolouring is usually not safe either: on a UMD lockup the white fills are
+shared between the wordmark and the flag globe's quadrants, so a blanket swap
+corrupts the globe. When no dark variant is published, fall back to
+`primary-logo-dark.svg` above and keep the reversed original alongside for
+reference.
+
+If the source site has no logo *image* at all — some sites set their brand as
+styled text — the `slot="logo"` anchor accepts text, and that is a better
+recreation than inventing a logo.
+
 ## Images
 
 When a real image URL is unavailable (hotlink protection, dynamic content):
@@ -87,6 +160,56 @@ When a real image URL is unavailable (hotlink protection, dynamic content):
 ### When to audit
 
 Only needed when the submodule version changes (`git submodule update` or a bump in `.gitmodules`). If the submodule hasn't moved, `critical.css` cannot have drifted.
+
+### The stylesheet pin follows the submodule
+
+Pages load the `web-styles-library` CSS bundles from unpkg at a **pinned version**, and that pin must match the `packages/styles` version inside the current submodule pin. The two move together — a submodule bump is not finished until the stylesheet links are repointed.
+
+Do not leave the links unversioned. An unpinned `unpkg.com/@universityofmaryland/web-styles-library/css/...` URL floats to whatever npm publishes as `latest`, so page CSS changes with no commit, `critical.css` gets audited against a version no page is guaranteed to load, and visual regressions appear with nothing in the history to explain them.
+
+**On every submodule bump:**
+
+```bash
+# 1. Read the styles version the new submodule pin ships
+grep -m1 '"version"' design-system/packages/styles/package.json
+
+# 2. Repoint every stylesheet link to it (TEMPLATE.html + test/ + qa/)
+OLD=1.8.16; NEW=<version from step 1>
+# Match the URL path form (@VER/css/), never the bare token — prose comments
+# cite versions historically and must not be rewritten. See the note below.
+grep -rl "web-styles-library@$OLD/css/" TEMPLATE.html test qa \
+  | xargs sed -i '' "s|web-styles-library@$OLD/css/|web-styles-library@$NEW/css/|g"
+
+# 3. Confirm none were missed — this must print nothing
+grep -rn "web-styles-library/css/" TEMPLATE.html test qa
+```
+
+Then run the `critical.css` audit below against that same version, and update the version stamp in the `styles/critical.css` header.
+
+### The components pin follows the submodule too
+
+The `cdn.js` script tag's `web-components-library@…` version must match the `packages/components` version in the current submodule pin, and `components_version` in every `registry/*.json` must match both. All three move together with the stylesheet pin.
+
+```bash
+# Version the new submodule pin ships
+grep -m1 '"version"' design-system/packages/components/package.json
+
+OLD=1.19.5; NEW=<version from above>
+# Again, match the URL path form (@VER/dist/), not the bare token.
+grep -rl "web-components-library@$OLD/dist/" TEMPLATE.html test qa \
+  | xargs sed -i '' "s|web-components-library@$OLD/dist/|web-components-library@$NEW/dist/|g"
+sed -i '' "s|\"components_version\": \"$OLD\"|\"components_version\": \"$NEW\"|" registry/registry-*.json
+```
+
+Then diff the component API surface across the two versions and apply any real changes to `registry/` before updating `last_verified`:
+
+```bash
+git -C design-system diff --stat <old-tag> <new-tag> -- packages/components/source/
+```
+
+**Writing version numbers in comments.** `critical.css` is inlined verbatim into every page, so any version it names shows up when you grep a built page. Phrase historical references so they cannot be mistaken for a pin — `RETIRED (upstream since web-styles-library@1.8.14)`, not `RETIRED (web-styles-library@1.8.14)` — and keep the bump `sed` scoped to the URL path form above so a tombstone is never rewritten into a false claim.
+
+That diff is the verification — it shows exactly which components' slots or attributes moved, so the rest of the registry stays valid without re-deriving it. **Carousels are the high-risk area**: they were substantially refactored across the 1.18 → 1.19 line, so QA any page using `umd-element-carousel-*` after a bump.
 
 ### How to audit
 

@@ -8,6 +8,7 @@ For any page-building task, first check the recipe files in `.codex/recipes/`. T
 
 | Task | Recipe |
 |---|---|
+| Stand up a whole site or project repo | `.codex/recipes/new-project.md` |
 | Plan a page from a brief or raw content | `.codex/recipes/plan-page.md` |
 | Recreate an existing page from a URL | `.codex/recipes/recreate-page.md` |
 | Build a fresh landing page from a brief | `.codex/recipes/build-landing-page.md` |
@@ -24,6 +25,7 @@ Treat the recipe as required workflow, not loose inspiration.
 These files are not terminal commands. Ask Codex to use the recipe that matches your task, for example:
 
 - "Use `.codex/recipes/recreate-page.md` to convert https://example.umd.edu/ into a UMD Design System page."
+- "Use `.codex/recipes/new-project.md` to scaffold a multi-page site project."
 - "Use `.codex/recipes/plan-page.md` to structure this raw content and build the right page type."
 - "Use `.codex/recipes/build-landing-page.md` to create a landing page about Quantum Research."
 - "Use `.codex/recipes/recommend-component.md` to choose a component for this content."
@@ -51,6 +53,7 @@ Do not invent component slots or attributes. Check the registry category file be
 Keep all paths repo-relative. Do not hardcode a user home directory.
 
 - Real demo pages: `examples/{slug}.html`
+- New site projects: a separate `{slug}-design` repo using `templates/project-scaffold/`
 - Fixed fixture pages: `test/{slug}.html`
 - Component QA pages: `qa/{slug}.html`
 - Temporary source downloads: `tmp/`

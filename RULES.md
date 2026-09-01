@@ -1,6 +1,6 @@
 # UMD Page Builder — Rules
 
-Verified against `@universityofmaryland/web-components-library@1.18.2`.  
+Verified against `@universityofmaryland/web-components-library@1.19.5`.
 Source: NPM package analysis + `beta.umd-staging.com` inspection.
 
 ---
@@ -14,7 +14,7 @@ Every standalone UMD HTML page must load these two files in `<head>`:
 <style>
   /* contents of styles/critical.css inlined here */
 </style>
-<script src="https://unpkg.com/@universityofmaryland/web-components-library@1.18.2/dist/cdn.js"></script>
+<script src="https://unpkg.com/@universityofmaryland/web-components-library@1.19.5/dist/cdn.js"></script>
 ```
 
 The canonical CSS is in **`styles/critical.css`** — the single source of truth. `TEMPLATE.html` inlines it verbatim. When updating CSS rules, edit `styles/critical.css` first, then copy changes to `TEMPLATE.html`.
@@ -29,13 +29,11 @@ The canonical CSS is in **`styles/critical.css`** — the single source of truth
 
 ## 2. Interstate font
 
-Interstate is a **licensed typeface**. The `@font-face` declarations with base64-encoded font data live in UMD's production `critical.css` (build artifact). `umd-critical.css` sets the font-family stack but does not embed the font.
+Interstate is a **licensed typeface**, but you do not need to self-host it. `TEMPLATE.html`'s `<head>` links the published `@font-face` bundle (`web-styles-library`'s `css/font-faces.min.css`) alongside the other stylesheet bundles. Copy the `<head>` block verbatim and Interstate renders.
 
-For the font to actually render as Interstate you must either:
-- Link UMD's production `critical.css` from your CMS or build output, OR  
-- Self-host the Interstate font files and add `@font-face` declarations yourself.
+Do not transcribe that URL here or into a page by hand — take it from `TEMPLATE.html`, which carries the current version pin. The pin moves with the submodule; see `CODEX.md`, "The stylesheet pin follows the submodule."
 
-Without the font loaded, the stack falls back to `Helvetica, Arial, Verdana, sans-serif`. All layouts and sizing will still be correct — only the typeface changes.
+`styles/critical.css` only sets the font-family *stack*; it does not embed font data. If the `font-faces` link is missing or blocked, the stack falls back to `Helvetica, Arial, Verdana, sans-serif` — all layouts and sizing stay correct, only the typeface changes.
 
 Font stacks (for reference):
 ```css
@@ -102,9 +100,26 @@ Nav items must be placed inside a `<nav slot="main-navigation">` wrapper, not sl
 The `slot="utility-navigation"` content is styled almost entirely by light-DOM CSS, **not** the shadow DOM. The component's shadow only does `.element-header-utility-row ::slotted(*) { display:flex; justify-content:flex-end; gap:24px }` — and `::slotted()` reaches **only the direct slotted `<div>`, never its descendants**. Two things fail silently if you forget them:
 
 1. **Links render browser-default blue + underlined** unless you set `color` and `text-decoration: none` on the `<a>`/`<button>` descendants. This is already in `styles/critical.css` §11 / `TEMPLATE.html` — so any page built from the template gets it. **Do not write a narrower scoped override that omits the color/decoration reset** (this is exactly how the bug keeps coming back).
-2. **Items are spaced ~57px apart, not ~33px,** if you use the `.umd-shell-utility-item` separator pattern without killing the shadow's `gap:24px`. The fix is the scoped rule `umd-element-navigation-header div[slot="utility-navigation"] { gap: 0 }` (already in §11). The `.umd-shell-utility-item` margins/border then provide the 16+1+16px separator.
+2. **Items are spaced ~57px apart, not ~33px,** if you use the `.umd-shell-utility-item` separator pattern without killing the shadow's `gap:24px`. §11 handles this with `umd-element-navigation-header div[slot="utility-navigation"]:has(.umd-shell-utility-item) { gap: 0 }`. The `.umd-shell-utility-item` margins/border then provide the 16+1+16px separator.
 
-Use the canonical production markup (matches umd.edu): plain `<div slot="utility-navigation">` → one `.umd-shell-utility-item` per link → `.umd-shell-utility-actions` → `<a class="umd-sans-smaller">`. For a dropdown item, use a `<button>` toggle + sibling `.umd-shell-utility-links[aria-hidden]` panel — see [LAYOUT-PATTERNS.md](LAYOUT-PATTERNS.md) for the full recipe + JS.
+### Two valid markup patterns — the `gap` reset applies to only one
+
+**Shell pattern (canonical, matches umd.edu).** Plain `<div slot="utility-navigation">` → one `.umd-shell-utility-item` per link → `.umd-shell-utility-actions` → `<a class="umd-sans-smaller">`. For a dropdown item, use a `<button>` toggle + sibling `.umd-shell-utility-links[aria-hidden]` panel — see [LAYOUT-PATTERNS.md](LAYOUT-PATTERNS.md) for the full recipe + JS. Each item carries its own separator margins, so §11 zeroes the shadow gap.
+
+**Flat-link pattern.** Plain `<a>` children directly in the slot (`<div slot="utility-navigation"><a>Visit</a><a>Connect</a></div>`) — simpler, and common when a site wants two or three bare links with no separators or dropdowns.
+
+> **The `gap: 0` reset is gated on `:has(.umd-shell-utility-item)` for a reason — do not un-gate it.** Flat `<a>` children have no separator margins, so an unconditional reset collapses them into one run-on string of links with no space between them. Gated, the shadow's own `gap: 24px` survives and flat links space correctly with no project-level override.
+>
+> What flat-link projects **do** still need is link **colour and decoration**: §11's BASE layer styles `.umd-shell-utility-item a`, which does not match a bare `<a>`. Without it the links render browser-default blue and underlined (failure mode 1 above). Add:
+>
+> ```css
+> umd-element-navigation-header div[slot="utility-navigation"] a {
+>   color: #242424;
+>   text-decoration: none;
+> }
+> ```
+>
+> This rule must load **after** the inlined critical block to win at equal specificity.
 
 ---
 
@@ -123,7 +138,7 @@ The standard pathway (`umd-element-pathway` with no `data-display`) renders a tw
 
 **Rule:** Standard pathway must only be used when a dark section wrapper (`background: #000` or similar) contains the entire component — so both columns sit within a contained dark field.
 
-**`data-theme="light"` is unimplemented on the standard pathway** in web-components-library v1.18.12 — upstream `composite/pathway/standard.js` only paints dark/maryland text-column backgrounds, so a light standard pathway renders with no panel at all and fails silently. For a light pathway with the gray offset panel, use the overlay variant: `data-display="overlay" data-theme="light"` (self-contained — see below — and includes the scroll-driven panel entrance animation).
+**`data-theme="light"` is unimplemented on the standard pathway** in web-components-library through 1.19.5 — upstream `composite/pathway/standard.js` only paints dark/maryland text-column backgrounds, so a light standard pathway renders with no panel at all and fails silently. For a light pathway with the gray offset panel, use the overlay variant: `data-display="overlay" data-theme="light"` (self-contained — see below — and includes the scroll-driven panel entrance animation).
 
 ```html
 <!-- ✓ Correct — dark theme inside dark section -->
@@ -146,9 +161,41 @@ Background panel color by theme:
 - `data-theme="maryland"` → red panel
 - `data-theme="light"` → light gray panel
 
+#### On overlay, `data-theme` also changes section height — it is not only a color
+
+`composite/pathway/overlay.ts` gates the lock wrapper's padding on a theme being *recognized*, not on which theme it is:
+
+```js
+const isThemeApplied = props.isThemeDark || props.isThemeLight || props.isThemeMaryland;
+// … @container (min-width: 800px)
+...(isThemeApplied && { padding: `${token.spacing['6xl']} 0` })   // 6xl = 80px
+```
+
+So on `data-display="overlay"`, at container width ≥ 800px:
+
+| Theme | Panel color | Lock-wrapper padding |
+|---|---|---|
+| No theme | white | none |
+| `white` | white | **none** |
+| `light` | light gray | **80px 0** |
+| `dark` | black | 80px 0 |
+| `maryland` | red | 80px 0 |
+
+**Consequence:** swapping `light` ↔ `white` on an otherwise identical section changes its rendered height by 160px (measured: 918px → 758px). `white` is not a lighter-weight `light` — it is the no-padding branch. Pick between them on layout rhythm as well as color: if a section needs the extra breathing room, `light`/`dark`/`maryland` supply it; `white` and no-theme leave the panel tight to its content and need surrounding spacing utilities to compensate.
+
+`white` is intentional, not a gap: it is the value for an overlay pathway that should sit **tight to its content** — a white panel without the extra 80px. Reach for it when the section background is dark and the surrounding rhythm already supplies the spacing.
+
+It is implemented by *fall-through* rather than parsed — the component reads only `dark`/`light`/`maryland`, so `white` takes the default branch. Verified identical in 1.18.12, in **1.19.5** (the CDN version pages now load), and in upstream `main` — `pathway/` has zero diff across all three — and confirmed behaviorally against the live bundle on umd.edu. One practical consequence for authors: a misspelling renders identically to a correct value. `data-theme="whte"` produces the exact same panel as `data-theme="white"`, so a typo here is invisible on the page and can only be caught by reading the attribute. (The same is not true of `light`/`dark`/`maryland`, where a typo visibly drops the color *and* the 80px.)
+
+Because that class of typo cannot be caught by eye, `tools/check-themes.py` checks `data-theme` values against `registry/` and is run by the build commands:
+
+```bash
+python3 tools/check-themes.py path/to/page.html
+```
+
 ### `data-animation` semantics — never include the attribute valueless
 
-Applies to `umd-element-pathway` and `umd-element-hero` (v1.18.12). The attribute reader treats the animation as **ON by default when the attribute is absent**, and only the exact value `"true"` reads as true — so a **bare `data-animation` (no value) reads as false and silently DISABLES the entrance animation**:
+Applies to `umd-element-pathway` and `umd-element-hero` (verified through 1.19.5). The attribute reader treats the animation as **ON by default when the attribute is absent**, and only the exact value `"true"` reads as true — so a **bare `data-animation` (no value) reads as false and silently DISABLES the entrance animation**:
 
 ```html
 <!-- ✓ Animation on (default) -->
@@ -271,15 +318,108 @@ Valid `data-display` values: `primary`, `secondary`. Omit for default style.
 - Use the correct element type per slot. Most headline slots expect heading elements (`h1`–`h6`). Most image slots expect `img` (not a `div` wrapping an `img`).
 - The `logo` slot in headers and footers must be an `<a>` wrapping an `<img>` — not just an `<img>` or text.
 
+### Slot content is CLONED into the shadow root by default — page CSS cannot reach it
+
+This decides whether your CSS classes work at all, and it fails silently when
+you get it wrong: the class simply does nothing, with no console error.
+
+`createStyledSlotOrClone` (web-utilities-library) is what most slots go through:
+
+```js
+const elementRef = element.querySelector(`:scope > [slot=${slotRef}]`);
+if (elementRef.hasAttribute('styled')) return createSlot(slotRef);  // real <slot>
+const clonedElement = elementRef.cloneNode(true);                   // copied into shadow
+```
+
+Two ways a slot ends up as a **real `<slot>`**, leaving content in the light DOM
+where CDN classes and page CSS apply normally:
+
+1. **The component opts out.** Slots requested with `isDefaultStyling: false`
+   always render a real `<slot>`. `umd-element-accordion-item`'s `slot="text"`
+   is one — which is why `class="umd-sans-large"` on a paragraph inside it just
+   works.
+2. **The author opts out** by putting a bare `styled` attribute on the slotted
+   element: `<div slot="text" styled>`. The component then emits a `<slot>` and
+   applies none of its own typography — you own all of it.
+
+Otherwise the content is **cloned into the shadow root**. Page CSS is out of
+reach and the only way to style it is a shadow injection (see OVERRIDES.md).
+
+**How to check, rather than guess:**
+
+```js
+el.shadowRoot.querySelector('slot[name="text"]')   // truthy → light DOM, page CSS works
+                                                   // null   → cloned, needs injection
+```
+
+⚠️ **`styled` does not work on `umd-element-pathway`'s `slot="stats"`.** That
+composite builds its wrapper with `statsWrapper.innerHTML = stats.innerHTML`,
+and a `<slot>` element's `innerHTML` is empty — adding `styled` there makes the
+entire stats block silently disappear. Style it with a shadow injection instead.
+
+### Typography classes with viewport ramps inside container-scoped components
+
+Type scale classes (`.umd-campaign-small`, `.umd-sans-medium`, …) step their
+size on **viewport** media queries. Components that lay out with **container**
+queries — pathway, sticky-columns, cards — can therefore be narrow on a wide
+window, and the class jumps to its large size in a column that cannot hold it.
+When restating a type class inside such a component, re-key its `@media` steps
+to `@container`. Viewport `@media` rules do work unchanged inside a shadow root;
+it is only the *breakpoint basis* that is wrong.
+
 ---
 
 ## 8. Registry is the source of truth
 
-Do not re-derive known components from NPM source or Storybook. Use the registry JSON. The registry has been verified directly from NPM package source for version `1.18.2`. Only add new components to the registry after verification — never guess slots or attribute names.
+Do not re-derive known components from NPM source or Storybook. Use the registry JSON. The registry has been verified directly from NPM package source for version `1.19.5`. Only add new components to the registry after verification — never guess slots or attribute names.
 
 ---
 
 ## 9. Stats layout rules
+
+### `slot="stat"` is hard-truncated to 6 characters — in every variant
+
+`umd-element-stat` cuts its own value at six characters and renders the result
+with no warning:
+
+```ts
+// packages/elements/source/atomic/text/stat.ts
+statElement.textContent = rawText.slice(0, 6);
+```
+
+That call is **unconditional** — not gated on `data-visual-size`,
+`data-display`, or `data-theme`, and no attribute turns it off. So:
+
+| Value | Renders as |
+|---|---|
+| `72%` | `72%` |
+| `$17,032` | `$17,03` |
+| `$82,860` | `$82,86` |
+
+This is worse than a layout bug: the page shows a **factually wrong number**,
+looks entirely normal doing it, and logs nothing. A screenshot review will not
+catch it either — `$17,03` reads as a plausible figure.
+
+**If a value exceeds 6 characters, do not use this component.** Dropping a `$`
+or a comma to fit changes what the number means. Mark it up directly with the
+type scale instead:
+
+```html
+<!-- ✓ Accurate — 7-character value, no stat component -->
+<div>
+  <p class="umd-sans-extralarge-bold">$17,032</p>
+  <p class="umd-sans-medium">average amount of aid received</p>
+</div>
+```
+
+Verified against 1.19.5. Re-check if the cap is ever lifted upstream.
+
+### Stat rows need a gapped grid — `umd-layout-grid-columns-*` is no-gap
+
+`umd-layout-grid-columns-two/three/four` are **no-gap** grids. Stats placed in
+one butt against each other and clip. Use the explicit gapped grid below, and
+add `umd-layout-grid-child-fill-height` to each stat when using
+`data-display="block"`.
 
 ### Large stats (data-visual-size="large") — max 4 per row
 
@@ -351,7 +491,7 @@ The design system provides CSS utility classes for consistent spacing between se
 
 ### CSS
 
-All vertical spacing rules are defined in `styles/critical.css` — section 3. They are already included in the TEMPLATE.html `<style>` block.
+These classes ship in the design system's `layout.min.css`, which every page links from unpkg — they are **not** in `styles/critical.css`. Do not go looking for them there, and do not hand-roll a local copy when one appears to be missing; check the linked bundle first.
 
 ### Usage pattern
 
@@ -394,7 +534,43 @@ A section intro or section header **always** needs `umd-layout-vertical-landing-
 <umd-feed-news data-token="..."></umd-feed-news>
 ```
 
-This rule applies whether the content that follows is a card grid, a feed component (`umd-feed-news`, `umd-feed-news-list`, `umd-feed-news-featured`), CTA buttons, or any other content block.
+This rule applies whether the content that follows is a card grid, a feed component (`umd-feed-news`, `umd-feed-news-list`, `umd-feed-news-featured`), CTA buttons, tabs, or any other content block.
+
+**The intro and the component it introduces belong in the SAME `<section>`.** Splitting them into two sections is the common way this goes wrong: each `<section class="umd-layout-vertical-landing">` carries full *section* rhythm, so the heading ends up separated from its own content by the same gap used between unrelated sections. It reads as a stranded heading, and no amount of tuning the child class fixes it because the child class is not what is creating the gap.
+
+```html
+<!-- ✗ Wrong — two sections, so section rhythm lands between a heading and its content -->
+<section class="umd-layout-vertical-landing">
+  <div class="umd-layout-space-horizontal-larger">
+    <umd-element-section-intro><h2 slot="headline">Information for...</h2></umd-element-section-intro>
+  </div>
+</section>
+<section class="umd-layout-vertical-landing">
+  <div class="umd-layout-space-horizontal-normal"><umd-element-tabs>…</umd-element-tabs></div>
+</section>
+
+<!-- ✓ Right — one section, one lock, child spacing between the two -->
+<section class="umd-layout-vertical-landing">
+  <div class="umd-layout-space-horizontal-small">
+    <umd-element-section-intro class="umd-layout-vertical-landing-child">
+      <h2 slot="headline">Information for...</h2>
+    </umd-element-section-intro>
+    <umd-element-tabs>…</umd-element-tabs>
+  </div>
+</section>
+```
+
+### Pick the section-intro variant to match the lock, not the page
+
+`umd-element-section-intro` centres its text; `umd-element-section-intro-wide` left-aligns across a wide measure. Choose by the width of the content it sits above:
+
+| Content below | Lock | Intro variant |
+|---|---|---|
+| Narrow / centred content — tabs, a quote, a constrained text block | `umd-layout-space-horizontal-small` or `-normal` | `umd-element-section-intro` |
+| Staggered or masonry card layouts | `umd-layout-space-horizontal-normal` | `umd-element-section-intro` — **always the small one**, so the heading centres on the same narrower lock the cards use |
+| Full-width card grids, feeds, sticky-columns | `umd-layout-space-horizontal-larger` | `umd-element-section-intro-wide` |
+
+The failure mode is `-wide` over a narrower lock: the heading spans further than the content beneath it and stops reading as that content's heading.
 
 ### Note on pathway sections
 
@@ -530,9 +706,54 @@ Pathway and hero components manage their own internal horizontal spacing — do 
 | `umd-layout-grid-gap-two` | `umd-layout-space-horizontal-larger` (1600px) | 2-column content grid |
 | `umd-layout-grid-gap-stacked` | `umd-layout-space-horizontal-larger` (1600px) | Single-column stacked list (used inside sticky-columns static slot) |
 | Card list / event list (standalone) | `umd-layout-space-horizontal-small` (992px) | See §33 |
+| `umd-element-tabs` (landing page) | `umd-layout-space-horizontal-small` (992px) | Centred. See below |
 | Card list / event list (inside sticky-columns) | `umd-layout-space-horizontal-larger` (1600px) via host | See §33 |
 
 ---
+
+### Tabs on a landing page lock to `umd-layout-space-horizontal-small`
+
+`umd-element-tabs` is not full-bleed and does not constrain itself. On a landing page, wrap it in `umd-layout-space-horizontal-small` (992px), centred — the same lock a card list uses.
+
+Wider locks let the tab row sprawl: the buttons space out across 1280px or 1600px while the panel content beneath them is short link lists or a paragraph, so the row stops reading as a control for the content under it, and it no longer lines up with the centred `umd-element-section-intro` above it.
+
+```html
+<!-- ✓ Landing page: intro and tabs share one section and one narrow lock -->
+<section class="umd-layout-vertical-landing">
+  <div class="umd-layout-space-horizontal-small">
+    <umd-element-section-intro class="umd-layout-vertical-landing-child">
+      <h2 slot="headline">Information for...</h2>
+    </umd-element-section-intro>
+    <umd-element-tabs>
+      <div slot="tabs">
+        <div data-title="Students">…</div>
+        <div data-title="Alumni">…</div>
+      </div>
+    </umd-element-tabs>
+  </div>
+</section>
+```
+
+Interior pages are governed by their own column widths (`umd-layout-space-columns-left`) and are not covered by this rule.
+
+### Video embeds on a landing page: `umd-layout-space-horizontal-small` or full bleed
+
+A third-party video embed (`<iframe>`) has no design-system component and no
+opinions of its own, so the page has to lock it. On a landing page use either:
+
+- **`umd-layout-space-horizontal-small`** (992px) — the default. Keeps the video
+  at reading width alongside the text it belongs to.
+- **Full bleed** — no horizontal wrapper, when the video is the section.
+
+Do not use the intermediate locks: at `-normal` or `-larger` a 16:9 embed grows
+tall enough to push everything else off screen without reading as a
+deliberate full-bleed moment.
+
+Always give the iframe `width:100%; aspect-ratio:16/9; height:auto` rather than
+the provider's fixed `width`/`height` attributes, or it will not scale.
+
+Strip provider tracking parameters from the embed URL — YouTube's `?si=` is a
+per-share token, not part of the embed.
 
 ### Quote uses `umd-layout-space-horizontal-normal`
 
@@ -565,7 +786,9 @@ When the quote text is **150 characters or fewer (including spaces)**, add `data
 </umd-element-quote>
 ```
 
-`data-visual-size="large"` is in the quote registry but is **not rendered by web-components-library v1.18.12** — it requires the quote-size shadow-injection polyfill (see `OVERRIDES.md`). Include that injection on any page that uses the attribute until it ships upstream.
+`data-visual-size="large"` **renders natively as of 1.19.5** and needs no polyfill. Verified two ways with no injection present: locally (32px large vs 22px default at desktop, 22px vs 18px at mobile) and against the design system's own QA page at `qa-designteam.umd-servd.com/components/text-quotes`, where `large` renders 32px and both `data-visual-size="false"` and the attribute's absence render 22px — including on a quote inside `umd-layout-image-expand` with `data-visual-transparent="true"`, which is the configuration this rule is usually reached for.
+
+It genuinely did not render at **1.18.12**, and the quote-size shadow injection in `OVERRIDES.md` exists for pages still pinned there. On 1.19.5 that injection is a no-op producing the identical 32px — do not add it to new pages, and drop it from a page when its cdn.js pin moves to 1.19.5.
 
 ### Quote attribution slots must use `<p>` — not `<cite>` or `<span>`
 
@@ -703,6 +926,34 @@ All watermark rules are defined in `styles/critical.css` — section 5. They are
 
 ---
 
+## 15b. `data-visual-*` boolean attributes need the literal `="true"`
+
+The design system's boolean-ish attributes are checked with `isAttributeTrue`
+against the **string `"true"`** — not by attribute presence. A bare attribute is
+inert, and nothing warns:
+
+```html
+<!-- ✗ Inert — renders exactly like a card with no attribute at all -->
+<umd-element-card data-visual-bordered>
+<umd-element-card data-visual-image-aligned>
+
+<!-- ✓ Applied -->
+<umd-element-card data-visual-bordered="true">
+<umd-element-card data-visual-image-aligned="true">
+```
+
+**There is no `data-aligned` attribute.** It appears nowhere in the design
+system and matches nothing — the current name is `data-visual-image-aligned`,
+with `aligned="true"` as the deprecated predecessor. A card written with
+`data-aligned` simply does not align, silently.
+
+The same pattern governs `data-visual-transparent="true"`,
+`data-visual-size="large"`, and the rest of the `data-visual-*` family: check
+`packages/model/source/attributes/checks.ts` when a visual attribute appears to
+do nothing. Verified against 1.19.5.
+
+---
+
 ## 16. Card overlay — `type="image"` is required for image backgrounds
 
 `umd-element-card-overlay` has two visual modes: solid-color background (default) and image background. The image background variant requires the deprecated `type="image"` attribute — without it, `slot="image"` is silently ignored and the component renders as a solid-color card.
@@ -723,6 +974,44 @@ All watermark rules are defined in `styles/critical.css` — section 5. They are
 ```
 
 Note: This uses the deprecated `type` attribute, not `data-type`. The attribute name is confirmed from cdn.js source.
+
+### `.size-large` needs a grid parent — in a block container the card renders 424px
+
+`.size-large` sets `min-height: 560px` on the **host** (768px+), and the card's
+shadow fills that box with `height: 100%` on `.card-overlay-image` and
+`.card-overlay-image-container`.
+
+A percentage height only resolves against a parent with a **definite** height.
+As a plain block child the host is `height: auto` with a 560px floor — not
+definite — so `height: 100%` does not resolve, the shadow falls back to its own
+`min-height: 424px`, and the card renders **424px inside a 560px box**, leaving
+136px of dead space beneath it.
+
+Make the container a **grid** and the item is stretched to a definite height, so
+the card fills. `umd-layout-grid-gap-stacked` does this for a single-item column
+without an inline style:
+
+```html
+<!-- ✗ Wrong — plain block slot, card renders 424px in a 560px box -->
+<div slot="sticky-column">
+  <umd-element-card-overlay type="image" class="size-large">…</umd-element-card-overlay>
+</div>
+
+<!-- ✓ Right — grid parent stretches the host, card fills to 560px -->
+<div slot="sticky-column" class="umd-layout-grid-gap-stacked">
+  <umd-element-card-overlay type="image" class="size-large">…</umd-element-card-overlay>
+</div>
+```
+
+This is why `.size-large` looks correct in the design system's own feature grids
+(`umd-layout-grid-columns-*`, `umd-layout-grid-child-size-double`) and looks
+broken the first time it is used outside one — a sticky column, a bare `<div>`,
+a flex **column** (whose stretch is horizontal, so it does not help either).
+
+**Do not "fix" this with a shadow injection.** It is not a component bug; it is a
+CSS percentage-height resolution rule, and the component behaves correctly in
+the layout it is designed for. Verified against 1.19.5: block parent 424px,
+grid parent 560px, flex-column 424px.
 
 ### When the source has any image, use the image variant
 
@@ -903,21 +1192,33 @@ Full HTML examples, CSS definitions, and all supporting layout classes are in **
 <div class="umd-text-rich-advanced">...</div>
 ```
 
-**Inline typography on dark backgrounds requires `text-white`:**
+**Inline headers/eyebrows need an explicit text color — they are NOT black by default:**
 
-Inline headline classes (`umd-sans-large`, `umd-sans-larger-bold`, `umd-sans-extralarge-bold`) output black text by default. On dark backgrounds, add `text-white` to force white. Define `.text-white { color: #ffffff; }` in your `<style>` block.
+The typography classes (`umd-sans-large`, `umd-sans-larger-bold`, `umd-sans-extralarge-bold`) set font only — **no color**. Text color is inherited, and the design system's `base.min.css` defaults body/paragraph copy to the DS gray `#454545`. So a rich-text section eyebrow or header renders **dark gray, not black**, unless you say otherwise. This is a common regression: the eyebrow label above a rich-text block (e.g. "Study Here", "Make UMD Yours") looks muddy gray instead of a crisp black header.
+
+- **Light background:** add `text-black` to the header/eyebrow `<p>`.
+- **Dark background:** add `text-white` (also required so the header isn't near-invisible on the dark band).
+
+Define `.text-black { color: #000; }` / `.text-white { color: #fff; }` in your `<style>` block (both ship in `critical.css`).
 
 ```html
-<!-- ✓ Correct -->
+<!-- ✓ Light background — crisp black eyebrow/header -->
+<p class="text-black umd-sans-large">Study Here</p>
+
+<!-- ✓ Dark background -->
 <p class="text-white umd-sans-larger-bold">Inline headline</p>
 
-<!-- ✗ Wrong — black text on black background -->
-<p class="umd-sans-larger-bold">Inline headline</p>
+<!-- ✗ Wrong — inherits DS #454545 gray (light) / invisible (dark) -->
+<p class="umd-sans-large">Study Here</p>
 ```
 
 **Inline typography uses `<p>` not heading tags:**
 
 Inline headline elements inside `umd-text-rich-advanced` are styled `<p>` elements, not `<h2>` etc. Heading tags carry semantic weight and should only be used for the section headline above the grid.
+
+**A true large headline must sit OUTSIDE the rich-text wrapper:**
+
+`.umd-text-rich-advanced > *` sets `font-size: 18px` on every direct child, which flattens any `umd-sans-*` size applied to an element *inside* the block — the weight still applies, but a 32px `umd-sans-extralarge-bold` collapses to 18px. So a real section headline must be a **sibling above** the rich-text block, not a child of it, with `umd-layout-space-vertical-headline-large` for the gap to the body. This is the mechanical reason heading tags belong above the grid (see the previous gotcha), and it is what the two-column image + text (zig-zag) pattern in LAYOUT-PATTERNS.md relies on.
 
 **The lock for these sections is `umd-layout-space-horizontal-small` (992px):**
 
@@ -994,6 +1295,7 @@ Use the following pattern, verified against umd.edu production markup:
 </div>
 ```
 
+- `umd-text-decoration-eyebrow` — the eyebrow above the heading: 12px, 700, uppercase, 0.6px letter-spacing. **Use this, not `umd-sans-smaller`** — the small sans class is body-scale text and reads as a stray line rather than a label. It is the same treatment pathway eyebrows use, so feature lockups match across components. Ships in the CDN `element.min.css`, not `critical.css`. Pair with `mb-sm`.
 - `umd-sans-largest-uppercase` — 800-weight uppercase heading, scales from 32px → 44px
 - `mb-md` — 24px bottom margin between heading and body copy
 - `umd-text-rich-advanced` — 18px body copy with animated red underline links
@@ -1653,6 +1955,27 @@ A vertical stack of `umd-element-accordion-item` siblings on a landing page uses
 | Horizontal wrap | `umd-layout-space-horizontal-small` (992px max-width) | — |
 | Gap between items | 8px | shipped by `web-components.min.css`: `umd-element-accordion-item + umd-element-accordion-item { margin-top: 8px }` |
 
+**This holds inside a sticky-columns static column too — do not wrap accordions in `umd-layout-grid-gap-stacked`.** §33 prescribes that wrapper for card lists and event lists in the static column, and it is easy to carry over to accordions by analogy. Doing so replaces the accordion's own 8px with the grid's much larger gap, and the stack stops reading as one control group.
+
+```html
+<!-- ✗ Wrong — the grid gap overrides the 8px the component already ships -->
+<div slot="static-column">
+  <div class="umd-layout-grid-gap-stacked">
+    <umd-element-accordion-item>…</umd-element-accordion-item>
+    <umd-element-accordion-item>…</umd-element-accordion-item>
+  </div>
+</div>
+
+<!-- ✓ Right — accordions are direct children; the adjacent-sibling rule applies -->
+<div slot="static-column">
+  <umd-element-accordion-item>…</umd-element-accordion-item>
+  <umd-element-accordion-item>…</umd-element-accordion-item>
+</div>
+```
+
+Verified against the design system's own QA page
+(`qa-designteam.umd-servd.com/components/accordion`): 8px between every item.
+
 ```html
 <section class="umd-layout-vertical-landing">
   <div class="umd-layout-space-horizontal-small">
@@ -1791,3 +2114,22 @@ Whenever a component changes between dark and light/default, re-audit both neigh
 - Light/default → dark: use normal section spacing unless the design intentionally calls for a flush transition.
 
 Theme changes are therefore a layout change, not only a color change. Do not leave spacing decisions inherited from the component's previous theme.
+
+## 37. Checkbox / radio choice labels — bold by default
+
+`base.min.css` sets a **global element rule** `label { font-weight: 700 }` (font-size 18px). So a bare `<label>` wrapping a checkbox/radio — e.g. a filter option row — renders its text **bold**, which reads as a heading and flattens the visual hierarchy between the group heading and its options.
+
+The design system already ships the fix: **`.umd-field-checkbox-wrapper`** (and its alias `.umd-forms-choices-wrapper`) sets `font-weight: 400` plus the correct `display:inline-flex`, `gap`, color, and hover transition for a choice row. Use it on the label — do **not** hand-roll a page-level `font-weight` override.
+
+```html
+<!-- ✓ Normal-weight choice label; only the group heading stays bold -->
+<label class="umd-field-checkbox-wrapper">
+  <input type="checkbox" name="filters" value="major" />
+  <span>Major <span class="umd-sans-smaller">(104)</span></span>
+</label>
+
+<!-- ✗ Wrong — inherits the global label{font-weight:700}; option text looks like a heading -->
+<label><input type="checkbox" name="filters" value="major" /> <span>Major</span></label>
+```
+
+Same root cause as the eyebrow-color gotcha (§18): a global `base.min.css` element rule imposes a default you must counter with the intended DS class, not an inline style.

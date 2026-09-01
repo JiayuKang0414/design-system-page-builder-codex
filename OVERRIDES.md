@@ -66,7 +66,11 @@ Injected after `customElements.whenDefined('umd-element-card-overlay')`, applied
 
 ## Quote size-large polyfill
 
-**Component:** `umd-element-quote` with `data-visual-size="large"`. The attribute is documented in `registry/registry-quote.json` and intended to enlarge the quote text, but **web-components-library v1.18.12 does not render it** — the shadow DOM keeps the default `.quote-container-quote` font size regardless. Used by the under-150-character quote rule (see `RULES.md` "Short quotes use data-visual-size").
+**STATUS: obsolete at 1.19.5 — keep only for pages still pinned to 1.18.12.**
+
+**Component:** `umd-element-quote` with `data-visual-size="large"`. The attribute is documented in `registry/registry-quote.json` and intended to enlarge the quote text. **v1.18.12 does not render it** — the shadow keeps the default `.quote-container-quote` font size regardless. Used by the under-150-character quote rule (see `RULES.md` "Short quotes use data-visual-size").
+
+**As of 1.19.5 the attribute renders natively** and this injection is a no-op producing the identical 32px (verified 2026-08-28: 32px large vs 22px default at desktop, 22px vs 18px at mobile, injection absent). Do not add it to new pages. Drop it from an existing page when that page's cdn.js pin moves to 1.19.5.
 
 **Override:** Shadow-inject the intended larger type scale onto `.quote-container-quote`, gated to the same breakpoints the component uses (`large.min` = 650px, `desktop.min` = 1024px). Applied to every `umd-element-quote[data-visual-size="large"]` after `customElements.whenDefined('umd-element-quote')`.
 
@@ -79,7 +83,8 @@ Injected after `customElements.whenDefined('umd-element-card-overlay')`, applied
 **Upstream candidate:** implement `data-visual-size="large"` in the quote composite so the attribute scales `.quote-container-quote` natively; retire this injection once it ships.
 
 **Pages using this:**
-- strategic-plan-design `pages/index.html` — President Pines quote inside `umd-layout-image-expand`
+- strategic-plan-design `pages/index.html` — President Pines quote inside `umd-layout-image-expand`. Still needed: that page loads cdn.js **1.18.12**. Remove the injection when it is bumped to 1.19.5.
+- ~~page-builder-examples `engineering/index.html`~~ — removed; that page is on 1.19.5 and never needed it.
 
 ---
 
