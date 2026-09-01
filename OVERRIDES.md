@@ -85,6 +85,19 @@ Injected after `customElements.whenDefined('umd-element-card-overlay')`, applied
 
 # Page-built components
 
+## .strategic-commitments-map — interactive overlapping commitment links
+
+**DS counterpart:** None. `umd-element-section-intro` provides the section heading, while the interactive diagram is a site-specific navigation graphic.
+
+**Why a page-built version was needed:** The Strategic Plan identity uses four overlapping commitment circles around a central "Fearlessly Forward" circle. Each circle must remain an independent link and rise above its siblings when hovered or keyboard-focused. No Design System component provides this overlapping spatial relationship or interaction.
+
+**Class definition:** `.strategic-commitments-map` establishes a responsive square positioning context. Five `.strategic-commitments-circle` links use percentage-based dimensions and positions; commitment modifier classes provide the UMD red, gold, gray, and black treatments. Hover and `:focus-visible` scale the active circle and raise its `z-index`, with transitions disabled for `prefers-reduced-motion`.
+
+**Pages using this:**
+- `examples/strategic-plan.html` — Our Strategic Commitments section immediately after the Overview pathway
+
+---
+
 ## .umd-action-outline-block — full-width outline CTA
 
 **DS counterpart:** `umd-element-call-to-action data-display="outline"`.

@@ -109,14 +109,14 @@
     "slots": [
       {
         "name": "headline",
-        "required": true,
-        "description": "Banner title. Renders uppercase, weight 800.",
+        "required": false,
+        "description": "Optional banner title. When provided, renders uppercase at weight 800.",
         "example": "<h2 slot=\"headline\">Fall 2026 Applications Open</h2>"
       },
       {
         "name": "text",
-        "required": true,
-        "description": "Banner copy.",
+        "required": false,
+        "description": "Optional banner copy.",
         "example": "<p slot=\"text\">Apply by December 1 for priority consideration.</p>"
       },
       {
@@ -153,7 +153,7 @@
       "dark": "Black background, white text.",
       "with_seal": "Adds university seal watermark."
     },
-    "notes": "No dismissal logic (unlike alert-site). Responsive layout at 650px breakpoint. On mobile, seal is hidden and actions stack below.",
+    "notes": "Headline and text are optional; the component also supports an actions-only file-links treatment. No dismissal logic (unlike alert-site). Responsive layout at 650px breakpoint. On mobile, seal is hidden and actions stack below.",
     "source": "npm",
     "priority": 2
   }

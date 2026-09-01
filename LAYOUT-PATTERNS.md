@@ -606,8 +606,23 @@ A recurring per-site convention (used on every page of the admissions and strate
 
 **Notes:**
 - Default (no `data-theme`) renders the gold band.
+- `slot="headline"` is optional. Omit it when the promo is one continuous message and place that message in `slot="text"`.
+- `slot="text"` is also optional. For an actions-only accessible-file treatment, use one large primary CTA with a downloadable PDF as the default link and a Plain Text link in the CTA's `slot="text"`:
+
+```html
+<umd-element-banner-promo>
+  <div slot="actions">
+    <umd-element-call-to-action data-display="primary" data-visual-size="large">
+      <a href="/document.pdf" download>PDF</a>
+      <a slot="text" href="/document.txt">Plain Text</a>
+    </umd-element-call-to-action>
+  </div>
+</umd-element-banner-promo>
+```
+
+The `download` attribute causes the CTA to add the Design System document icon automatically. The supporting `slot="text"` link renders as underlined text.
 - `.banner-promo-actions` (stacked actions with an 8px gap) is a documented shadow-injection override — see `OVERRIDES.md` before reusing.
-- If the site adopts this closer, keep headline/text/actions consistent across its pages — the repetition is the point (a stable "what next" bookend).
+- If the site adopts this closer, keep its text/actions and optional headline treatment consistent across pages — the repetition is the point (a stable "what next" bookend).
 
 ---
 

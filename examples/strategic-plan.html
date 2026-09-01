@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Home — University of Maryland Strategic Plan | University of Maryland</title>
+
+  <!-- ============================================================
+       UMD Critical CSS — Hybrid CDN + Local
+       MUST precede cdn.js. If cdn.js loads first, elements upgrade
+       before :defined rules exist and container-type never gets set.
+
+       Load order:
+         <link> CDN bundles → <style> local subset → <script> cdn.js
+
+       Browsers block on stylesheet fetches before parsing the script
+       tag, so all CSS — both upstream and local — applies before
+       custom elements upgrade.
+
+       SOURCE OF TRUTH: styles/critical.css
+       The inline <style> block is a verbatim copy of styles/critical.css.
+       When updating, edit styles/critical.css first, then copy here.
+       See REQUIRED-CSS.md for what each rule does and why.
+  ============================================================ -->
+  <link rel="stylesheet" href="https://unpkg.com/@universityofmaryland/web-styles-library/css/font-faces.min.css">
+  <link rel="stylesheet" href="https://unpkg.com/@universityofmaryland/web-styles-library/css/tokens.min.css">
+  <link rel="stylesheet" href="https://unpkg.com/@universityofmaryland/web-styles-library/css/base.min.css">
+  <link rel="stylesheet" href="https://unpkg.com/@universityofmaryland/web-styles-library/css/typography.min.css">
+  <link rel="stylesheet" href="https://unpkg.com/@universityofmaryland/web-styles-library/css/web-components.min.css">
+  <link rel="stylesheet" href="https://unpkg.com/@universityofmaryland/web-styles-library/css/layout.min.css">
+  <style>
+    /* ============================================================
+       1. COMPONENT REGISTRATION GAP-FILLS
+       Re-add :defined rules for components missing from upstream
+       web-components.min.css. As those land upstream, drop these.
+       ============================================================ */
+
+    /* umd-element-utility-header — present on every page (band above the
+       nav header). Not in upstream bundle as of v1.8.11. */
+    umd-element-utility-header:not(:defined) { content-visibility: hidden; }
+    umd-element-utility-header { display: block; container-type: normal; }
+
+    /* umd-element-carousel* — not in upstream bundle. */
+    umd-element-carousel:not(:defined),
+    umd-element-carousel-cards:not(:defined),
+    umd-element-carousel-thumbnail:not(:defined),
+    umd-element-carousel-image:not(:defined),
+    umd-element-carousel-image-wide:not(:defined),
+    umd-element-carousel-multiple-image:not(:defined) {
+      content-visibility: hidden;
+    }
+    umd-element-carousel,
+    umd-element-carousel-cards,
+    umd-element-carousel-thumbnail,
+    umd-element-carousel-image,
+    umd-element-carousel-image-wide,
+    umd-element-carousel-multiple-image {
+      display: block;
+      container-type: inline-size;
+    }
+
+    /* umd-layout-image-expand — full-bleed pseudo-component.
+       Width:100% is project-specific (collapses without it). */
+    umd-layout-image-expand:not(:defined) { content-visibility: hidden; }
+    umd-layout-image-expand {
+      display: block;
+      container-type: inline-size;
+      width: 100%;
+    }
+
+    /* Project-specific spacing for breadcrumb (not a default in upstream). */
+    umd-element-breadcrumb:defined { margin-top: 16px; }
+
+
+    /* ============================================================
+       2. WATERMARK DECORATION
+       ============================================================ */
+    :is(.umd-text-decoration-watermark, .umd-watermark, .umd-watermark-dark) > * {
+      position: absolute;
+      top: 20px;
+      left: -2%;
+      color: #f1f1f1;
+      font-weight: 700;
+      text-transform: uppercase;
+      font-size: min(calc(44px + 13vw), 240px);
+      line-height: 0;
+      pointer-events: none;
+      user-select: none;
+      white-space: nowrap;
+    }
+    :is(.umd-text-decoration-watermark, .umd-watermark):not(.umd-watermark-dark) > * {
+      opacity: 0.6;
+      z-index: -1;
+    }
+    .umd-watermark-dark > * {
+      opacity: 0.12;
+      z-index: inherit;
+    }
+    @keyframes slide-in-from-left {
+      from { transform: translate(-15vw); }
+      to   { transform: translate(0); }
+    }
+    @media (prefers-reduced-motion: no-preference) {
+      @supports (animation-timeline: scroll()) {
+        :is(.umd-text-decoration-watermark, .umd-watermark, .umd-watermark-dark) > * {
+          animation: slide-in-from-left forwards;
+          animation-timeline: view();
+          animation-range-start: 0;
+          animation-range-end: 100vh;
+          transform: translate(-15vw);
+        }
+      }
+    }
+
+
+    /* ============================================================
+       3. LAYOUT AUGMENTATIONS
+       Extra properties on upstream layout classes that layout.min.css
+       doesn't include. These cascade over the upstream rules.
+       ============================================================ */
+
+    /* Upstream sets max-width/padding correctly. These extra properties are
+       required for watermark positioning and the internal @container query
+       used by umd-element-section-intro-wide. */
+    .umd-layout-space-horizontal-larger {
+      position: relative;
+      container-type: inline-size;
+      isolation: isolate;
+    }
+
+    /* Upstream omits align-items and flex-shrink on the columns-left layout.
+       align-items: flex-start prevents variable-height sidebar from stretching;
+       flex-shrink: 0 keeps the fixed 242px sidebar width under constraint.
+       Breakpoint matches upstream desktop.min (1024px) after DSYS-3063 fix —
+       sidebar width/margin moved from tablet.min (768px) to desktop.min. */
+    @media (min-width: 1024px) {
+      .umd-layout-space-columns-left { align-items: flex-start; }
+      .umd-layout-space-columns-left > *:first-child { flex-shrink: 0; }
+    }
+
+
+    /* ============================================================
+       4. BACKGROUND-FULL-DARK BUG FIX
+       layout.min.css serializes the highDef breakpoint as
+       @media([object Object]) — ignored by browsers — because
+       background/full.ts:42 uses media.queries.highDef (the whole
+       object) instead of media.queries.highDef.min. This rule
+       cascades over the broken upstream with the correct breakpoint.
+       ============================================================ */
+    .umd-layout-background-full-dark {
+      background-color: #000000;
+      padding: 48px 0;
+    }
+    @media (min-width: 768px) {
+      .umd-layout-background-full-dark { padding: 80px 0; }
+    }
+    @media (min-width: 1200px) {
+      .umd-layout-background-full-dark { padding: 104px 0; }
+    }
+
+
+    /* ============================================================
+       5. MASONRY SECTION-INTRO COMPANION
+       Compensates for masonry's negative top margin when a section
+       intro immediately precedes it. The base .umd-layout-grid-masonry
+       class comes from layout.min.css.
+       ============================================================ */
+    @media (min-width: 768px) {
+      umd-element-section-intro + .umd-layout-grid-masonry,
+      umd-element-section-intro-wide + .umd-layout-grid-masonry { padding-top: 32px; }
+    }
+    @media (min-width: 1024px) {
+      umd-element-section-intro + .umd-layout-grid-masonry,
+      umd-element-section-intro-wide + .umd-layout-grid-masonry { padding-top: 40px; }
+    }
+
+
+    /* ============================================================
+       6. COLOR UTILITIES — not in upstream tokens or typography bundles
+       ============================================================ */
+    .text-black { color: #000; }
+    .text-white { color: #ffffff; }
+
+
+    /* ============================================================
+       7. RICH TEXT ADVANCED — editorial body copy
+       Light and dark variants. 18px/1.5em with link hover styles.
+       ============================================================ */
+
+    /* Light variant */
+    .umd-text-rich-advanced {
+      font-size: 18px;
+      line-height: 1.5em;
+    }
+    .umd-text-rich-advanced * {
+      color: #454545;
+    }
+    .umd-text-rich-advanced > * {
+      font-size: 18px;
+      margin-top: 24px;
+    }
+    .umd-text-rich-advanced > *:first-child {
+      margin-top: 0;
+    }
+    .umd-text-rich-advanced a {
+      color: #000000;
+      background-image: linear-gradient(#000000, #000000);
+      position: relative;
+      background-position: left calc(100% - 1px);
+      background-repeat: no-repeat;
+      background-size: 100% 1px;
+      transition: color 0.5s, background-size 0.5s, background-image 0.5s, background-position 0.5s;
+    }
+    .umd-text-rich-advanced a:hover,
+    .umd-text-rich-advanced a:focus {
+      background-image: linear-gradient(#E21833, #E21833);
+    }
+
+    /* Dark variant */
+    .umd-text-rich-advanced-dark {
+      font-size: 18px;
+      line-height: 1.5em;
+    }
+    .umd-text-rich-advanced-dark p,
+    .umd-text-rich-advanced-dark li { color: #ffffff; }
+    .umd-text-rich-advanced-dark a {
+      color: #ffffff;
+      background-image: linear-gradient(#ffffff, #ffffff);
+      position: relative;
+      background-position: left calc(100% - 1px);
+      background-repeat: no-repeat;
+      background-size: 100% 1px;
+      transition: color 0.5s, background-size 0.5s, background-image 0.5s, background-position 0.5s;
+    }
+    .umd-text-rich-advanced-dark a:hover,
+    .umd-text-rich-advanced-dark a:focus {
+      background-image: linear-gradient(#FFD200, #FFD200);
+    }
+
+
+    /* ============================================================
+       8. INTERIOR PAGE LAYOUT UTILITIES
+       ============================================================ */
+
+    /* Content column max-width (Tailwind utility) */
+    .max-w-\[800px\] { max-width: 800px; }
+
+
+    /* ============================================================
+       9. IMAGE-EXPAND CONTENT UTILITIES
+       Classes for div[slot="content"] inside umd-layout-image-expand.
+       ============================================================ */
+    .max-w-\[480px\] { max-width: 480px; }
+    .w-full          { width: 100%; }
+    .block           { display: block; }
+    .mr-auto         { margin-right: auto; }
+    .pl-md           { padding-left: 24px; }
+
+    .umd-adjacent-line-text { position: relative; }
+    .umd-adjacent-line-text::before {
+      content: "";
+      display: block;
+      position: absolute;
+      top: 0;
+      width: 2px;
+      height: 100%;
+      background-color: #E21833;
+      left: -24px;
+    }
+
+    /* Body copy on dark/image backgrounds — white text, animated underline links */
+    .umd-text-rich-simple-large-dark {
+      font-size: 18px;
+      line-height: 1.5em;
+      color: #ffffff;
+    }
+    .umd-text-rich-simple-large-dark * { color: #ffffff; }
+    .umd-text-rich-simple-large-dark > * { font-size: 18px; margin-top: 24px; }
+    .umd-text-rich-simple-large-dark > *:first-child { margin-top: 0; }
+    .umd-text-rich-simple-large-dark a {
+      color: #ffffff;
+      background-image: linear-gradient(#ffffff, #ffffff);
+      position: relative;
+      background-position: left calc(100% - 1px);
+      background-repeat: no-repeat;
+      background-size: 100% 1px;
+      transition: color 0.5s, background-size 0.5s, background-image 0.5s, background-position 0.5s;
+    }
+    .umd-text-rich-simple-large-dark a:hover,
+    .umd-text-rich-simple-large-dark a:focus {
+      background-image: linear-gradient(#FFD200, #FFD200);
+    }
+
+
+    /* ============================================================
+       10. STICKY COLUMNS UTILITIES
+       Spacing tokens for slot content inside umd-element-sticky-columns.
+       ============================================================ */
+    .mb-md { margin-bottom: 24px; }
+    .mb-sm { margin-bottom: 16px; }
+
+
+    /* ============================================================
+       11. UTILITY NAVIGATION / SHELL-ITEM LINK STYLES
+       The shadow DOM ::slotted(*) only reaches div[slot="utility-navigation"],
+       NOT descendants — all link and separator styles must live here.
+
+       Canonical production pattern (matches umd.edu markup):
+       - Slot container: plain <div slot="utility-navigation">
+       - Each item: div.umd-shell-utility-item > div.umd-shell-utility-actions
+                    > a.umd-sans-smaller (or button for dropdowns)
+       - Dropdown: sibling div.umd-shell-utility-links[aria-hidden] panel
+
+       TWO LAYERS — keep them separate:
+       A. BASE (unscoped) — the reusable .umd-shell-utility-item pattern.
+          Used in the nav-header utility slot AND reused in pathway /
+          banner-promo / section-intro action slots (RULES.md §5). These
+          rules MUST stay unscoped or the reuse renders unstyled.
+       B. NAV-HEADER (scoped) — overrides the shadow ::slotted(*) gap:24px
+          and adds dropdown anchoring + panel. Only meaningful in the slot.
+       ============================================================ */
+
+    /* ---- A. BASE: reusable shell-item pattern (do NOT scope) ---- */
+    .umd-shell-utility-item .umd-shell-utility-actions {
+      align-items: center;
+      display: flex;
+      gap: 4px;
+    }
+    .umd-shell-utility-item:not(:last-child) .umd-shell-utility-actions {
+      border-right: 1px solid #E6E6E6;
+      margin-right: 16px;
+      padding-right: 16px;
+    }
+    .umd-shell-utility-item a {
+      color: #242424;
+      text-decoration: none;
+    }
+    .umd-shell-utility-item a:hover,
+    .umd-shell-utility-item a:focus {
+      color: #E21833;
+    }
+
+    /* ---- B. NAV-HEADER: scoped to the utility-navigation slot ---- */
+    /* Override the shadow ::slotted(*) gap:24px (the wrapper margins above
+       handle item spacing in the shell pattern). */
+    umd-element-navigation-header div[slot="utility-navigation"] {
+      gap: 0;
+    }
+    umd-element-navigation-header div[slot="utility-navigation"] .umd-shell-utility-item {
+      position: relative;
+      z-index: 99999;
+    }
+    umd-element-navigation-header div[slot="utility-navigation"] .umd-shell-utility-item button {
+      color: #242424;
+      text-decoration: none;
+    }
+    /* Dropdown panel (shown via JS toggling aria-hidden — see LAYOUT-PATTERNS.md) */
+    umd-element-navigation-header div[slot="utility-navigation"] .umd-shell-utility-item .umd-shell-utility-links {
+      display: none;
+    }
+    umd-element-navigation-header div[slot="utility-navigation"] .umd-shell-utility-item .umd-shell-utility-links > * {
+      color: #242424;
+      display: block;
+      padding: 12px;
+      text-align: right;
+      text-decoration: none;
+    }
+    umd-element-navigation-header div[slot="utility-navigation"] .umd-shell-utility-item .umd-shell-utility-links a:hover,
+    umd-element-navigation-header div[slot="utility-navigation"] .umd-shell-utility-item .umd-shell-utility-links a:focus {
+      color: #a90007;
+    }
+    umd-element-navigation-header div[slot="utility-navigation"] .umd-shell-utility-item .umd-shell-utility-links[aria-hidden="false"] {
+      align-items: flex-end;
+      background-color: #fafafa;
+      box-shadow: -1px 9px 32px -10px rgba(0, 0, 0, .19);
+      display: flex;
+      flex-direction: column;
+      position: absolute;
+      right: 0;
+      top: 16px;
+      width: 200px;
+      max-width: 80vw;
+    }
+
+
+    /* ============================================================
+       12. BANNER-PROMO STACKED ACTIONS — light-DOM column flex.
+       Pairs with the shadow-DOM injection in OVERRIDES.md so the 8px
+       gap is visible regardless of where children render.
+       ============================================================ */
+    .banner-promo-actions {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 8px;
+    }
+
+
+    /* ============================================================
+       13. SECTION DIVIDER — standalone <hr> utility.
+       ============================================================ */
+    .umd-text-divider {
+      border: none;
+      border-top: 1px solid #000000;
+      margin: 0 0 24px 0;
+    }
+    .umd-text-divider.dark {
+      border-top-color: #ffffff;
+    }
+
+
+    /* ============================================================
+       14. TRAILING-LINE LABEL — section eyebrow with horizontal line
+       Source: @universityofmaryland/web-styles-library: element.text.line.trailing
+       ============================================================ */
+    .umd-text-line-trailing,
+    .umd-text-line-trailing-dark {
+      font-family: "Interstate", Helvetica, Arial, Verdana, sans-serif;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.16em;
+      line-height: 1.42em;
+      text-transform: uppercase;
+      position: relative;
+      overflow: hidden;
+      background-color: #ffffff;
+    }
+    .umd-text-line-trailing::before,
+    .umd-text-line-trailing-dark::before {
+      content: "";
+      position: absolute;
+      top: 9px;
+      right: 0;
+      width: 100vw;
+      height: 1px;
+      background: #000000;
+      z-index: 1;
+    }
+    .umd-text-line-trailing > span,
+    .umd-text-line-trailing-dark > span {
+      position: relative;
+      background-color: inherit;
+      padding-right: 8px;
+      z-index: 2;
+    }
+    .umd-text-line-trailing + *,
+    .umd-text-line-trailing-dark + * {
+      margin-top: 40px;
+    }
+    .umd-text-line-trailing-dark {
+      background-color: #000000;
+      color: #ffffff;
+    }
+    .umd-text-line-trailing-dark::before {
+      background: #ffffff;
+    }
+
+
+    /* ============================================================
+       15. NO-GAP CARD GRID — 3 columns flush together
+       ============================================================ */
+    .umd-layout-grid-cards-no-gap {
+      display: grid;
+      grid-template-columns: 1fr;
+    }
+    @media (min-width: 768px) {
+      .umd-layout-grid-cards-no-gap {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+    .umd-layout-grid-cards-no-gap > * {
+      height: 100%;
+    }
+
+
+    /* ============================================================
+       16. OVERLAY CARD .size-large MIN-HEIGHT
+       Source: design-system/packages/styles/source/web-components.ts
+               (cardOverlay custom rules — umd-element-card-overlay.size-large)
+       ============================================================ */
+    umd-element-card-overlay.size-large {
+      min-height: 320px;
+    }
+    @media (min-width: 768px) {
+      umd-element-card-overlay.size-large {
+        min-height: 560px;
+      }
+    }
+
+
+    /* ============================================================
+       17. TUITION & AID 2-COLUMN GRID
+       Asymmetric content split: 1.5fr / 1fr at 1024px+.
+       ============================================================ */
+    .umd-layout-grid-tuition-two {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 32px;
+    }
+    @media (min-width: 1024px) {
+      .umd-layout-grid-tuition-two {
+        grid-template-columns: 1.5fr 1fr;
+        gap: 80px;
+      }
+    }
+
+
+    /* ============================================================
+       18. FULL-WIDTH OUTLINE BUTTON — light-DOM utility class
+       Visually mirrors umd-element-call-to-action data-display="outline"
+       but stretches to fill its grid cell. Use when the DS web component's
+       shadow-DOM max-width:380px would fight against your layout.
+       ============================================================ */
+    .umd-action-outline-block {
+      display: block;
+      width: 100%;
+      box-sizing: border-box;
+      padding: 12px 24px;
+      font-family: "Interstate", Helvetica, Arial, Verdana, sans-serif;
+      font-size: 16px;
+      font-weight: 800;
+      line-height: 1.28em;
+      text-align: center;
+      text-decoration: none;
+      background-color: #ffffff;
+      border: 1px solid #242424;
+      color: #000000;
+      transition: background 0.5s ease-in-out, border 0.5s ease-in-out, color 0.5s ease-in-out;
+    }
+    .umd-action-outline-block:hover,
+    .umd-action-outline-block:focus {
+      background-color: #242424;
+      color: #ffffff;
+    }
+    .umd-action-outline-block.dark {
+      background-color: transparent;
+      border: 1px solid #ffffff;
+      color: #ffffff;
+    }
+    .umd-action-outline-block.dark:hover,
+    .umd-action-outline-block.dark:focus {
+      background-color: #ffffff;
+      color: #000000;
+    }
+
+
+    /* ============================================================
+       STRATEGIC COMMITMENTS MAP — page-specific interactive graphic
+       This composition belongs to the Strategic Plan site only.
+       ============================================================ */
+    .strategic-commitments-map {
+      aspect-ratio: 1 / 1;
+      isolation: isolate;
+      margin: 48px auto 0;
+      max-width: 736px;
+      position: relative;
+      width: 100%;
+    }
+    .strategic-commitments-circle {
+      align-items: center;
+      border-radius: 50%;
+      box-sizing: border-box;
+      display: flex;
+      font-family: "Interstate", Helvetica, Arial, Verdana, sans-serif;
+      font-size: 14px;
+      font-weight: 800;
+      height: 48%;
+      justify-content: center;
+      line-height: 1.25em;
+      padding: 8%;
+      position: absolute;
+      text-align: center;
+      text-decoration: none;
+      text-transform: uppercase;
+      transform: scale(1);
+      transition: box-shadow 220ms ease, transform 220ms ease;
+      width: 48%;
+      z-index: 1;
+    }
+    .strategic-commitments-circle:hover {
+      box-shadow: 0 18px 42px rgba(0, 0, 0, 0.24);
+      outline: 4px solid #ffffff;
+      outline-offset: -6px;
+      transform: scale(1.1);
+      z-index: 20;
+    }
+    .strategic-commitments-circle:focus-visible {
+      box-shadow: 0 0 0 4px #ffffff, 0 0 0 8px #000000, 0 18px 42px rgba(0, 0, 0, 0.24);
+      outline: none;
+      transform: scale(1.1);
+      z-index: 20;
+    }
+    .strategic-commitments-circle--learning {
+      background-color: rgba(226, 24, 51, 0.84);
+      color: #000000;
+      left: 26%;
+      top: 0;
+    }
+    .strategic-commitments-circle--challenges {
+      background-color: rgba(255, 210, 0, 0.78);
+      color: #000000;
+      left: 52%;
+      top: 26%;
+    }
+    .strategic-commitments-circle--people {
+      background-color: rgba(191, 191, 191, 0.78);
+      color: #000000;
+      left: 26%;
+      top: 52%;
+    }
+    .strategic-commitments-circle--public-good {
+      background-color: rgba(64, 64, 64, 0.8);
+      color: #ffffff;
+      left: 0;
+      top: 26%;
+    }
+    .strategic-commitments-circle--core {
+      background-color: #000000;
+      border: 6px solid #ffffff;
+      color: #ffffff;
+      font-size: 12px;
+      height: 29%;
+      left: 35.5%;
+      padding: 4%;
+      top: 35.5%;
+      width: 29%;
+      z-index: 5;
+    }
+    @media (min-width: 650px) {
+      .strategic-commitments-map {
+        margin-top: 64px;
+        width: 80%;
+      }
+      .strategic-commitments-circle { font-size: 20px; }
+      .strategic-commitments-circle--core { font-size: 19px; }
+    }
+    @media (min-width: 1024px) {
+      .strategic-commitments-circle { font-size: 24px; }
+      .strategic-commitments-circle--core { font-size: 22px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .strategic-commitments-circle { transition: none; }
+    }
+  </style>
+
+  <script src="https://unpkg.com/@universityofmaryland/web-components-library@1.18.12/dist/cdn.js"></script>
+</head>
+<body>
+
+  <!-- ========================================
+       1. GLOBAL UNIVERSITY HEADER
+       Hardcoded. Never modified. Zero config.
+  ======================================== -->
+  <umd-element-navigation-utility data-alert-off="true" role="navigation" aria-label="Utility navigation"></umd-element-navigation-utility>
+
+  <umd-element-utility-header></umd-element-utility-header>
+
+  <umd-element-navigation-header sticky class="umd-layout-space-horizontal-full">
+    <a slot="logo" href="./strategic-plan.html">
+      <img src="../images/logos/strategic-plan-logo.svg" alt="University of Maryland Strategic Plan" onerror="this.onerror=null;this.src='../images/logos/primary-logo-dark.svg';" />
+    </a>
+    <nav slot="main-navigation">
+      <umd-element-nav-item>
+        <a slot="primary-link" href="./guiding-principles.html">Guiding Principles</a>
+      </umd-element-nav-item>
+      <umd-element-nav-item>
+        <a slot="primary-link" href="#commitments">Strategic Commitments</a>
+        <div slot="dropdown-links">
+          <a href="https://strategicplan.umd.edu/commitment/we-reimagine-learning">We reimagine learning</a>
+          <a href="https://strategicplan.umd.edu/commitment/we-take-on-humanitys-grand-challenges">We take on humanity's grand challenges</a>
+          <a href="https://strategicplan.umd.edu/commitment/we-invest-in-people-and-communities">We invest in people and communities</a>
+          <a href="https://strategicplan.umd.edu/commitment/we-partner-to-advance-the-public-good">We partner to advance the public good</a>
+        </div>
+      </umd-element-nav-item>
+      <umd-element-nav-item>
+        <a slot="primary-link" href="https://strategicplan.umd.edu/implementation">Implementation</a>
+      </umd-element-nav-item>
+      <umd-element-nav-item>
+        <a slot="primary-link" href="https://strategicplan.umd.edu/impact">Impact</a>
+      </umd-element-nav-item>
+    </nav>
+    <div slot="primary-slide-links">
+      <a href="./guiding-principles.html"><span>Guiding Principles</span></a>
+      <a href="#commitments"><span>Strategic Commitments</span></a>
+      <a href="https://strategicplan.umd.edu/implementation"><span>Implementation</span></a>
+      <a href="https://strategicplan.umd.edu/impact"><span>Impact</span></a>
+    </div>
+  </umd-element-navigation-header>
+
+  <section>
+    <umd-element-hero data-theme="dark" data-layout-text="center" data-animation>
+      <img slot="image" src="../images/projects/strategic-plan/hero.jpg" alt="A Bronze statue of Testudo looking up to the sun fearless and proud. Testudo's Nose is brightly polished from all all the wishes for good luck." />
+      <h1 slot="headline">Fearlessly Forward</h1>
+      <div slot="text">
+        <p>In Pursuit of Excellence and Impact for the Public Good</p>
+        <p>The University of Maryland Strategic Plan</p>
+      </div>
+    </umd-element-hero>
+  </section>
+
+  <section id="overview" class="umd-layout-background-full-dark umd-layout-vertical-landing">
+    <umd-element-pathway data-display="sticky" data-theme="dark">
+      <img slot="image" src="../images/large/campus/Student%20on%20campus.jpg" alt="Students walking across McKeldin Mall toward McKeldin Library" />
+      <h2 slot="headline">Overview</h2>
+      <div slot="text">
+        <p><strong>THE UNIVERSITY OF MARYLAND IS AN EXTRAORDINARY PLACE—VIBRANT AND DYNAMIC AND DIVERSE.</strong></p>
+        <p>We are a place of learning: a school dedicated to the art and science of education and committed to reimagining teaching and learning inside both classrooms and communities.</p>
+        <p>We are a campus dedicated to the indisputable value of science and humanities, inquiry, and creativity, and comprising tens of thousands of searchers and discoverers working in hundreds of laboratories, libraries, and collaborative spaces. Strategically located just a few miles from the nation’s capital, our university is a place where new knowledge is pursued, discovered, and championed.</p>
+        <p>We are also a community, nearly half a million members strong, of diverse students, faculty, staff, and alumni; a small city of residents and commuters, first responders and health care workers, learners, artists, and athletes; a place where thousands come to work every day to make a difference. Our diversity is integral to our excellence.&nbsp;And ours is a community that is intrinsically connected to our surrounding neighborhoods and our state, our nation, and our world.</p>
+        <p>The University of Maryland remains, since our founding, an institution of change and progress, and a proud land-grant flagship campus dedicated to the public good.</p>
+        <p>Our university is evolving faster than at any moment in its storied history. Our guiding principles are helping us to empower the next generation of leaders, artists, writers, educators, scientists, and global citizens to develop creative solutions to the grand challenges of our times.</p>
+      </div>
+    </umd-element-pathway>
+  </section>
+
+  <section id="commitments" class="umd-layout-vertical-landing">
+    <div class="umd-layout-space-horizontal-larger">
+      <umd-element-section-intro>
+        <h2 slot="headline">Our Strategic Commitments</h2>
+      </umd-element-section-intro>
+
+      <nav class="strategic-commitments-map" aria-label="Our Strategic Commitments">
+        <a
+          class="strategic-commitments-circle strategic-commitments-circle--learning"
+          href="https://strategicplan.umd.edu/commitment/we-reimagine-learning">
+          We Reimagine Learning
+        </a>
+        <a
+          class="strategic-commitments-circle strategic-commitments-circle--public-good"
+          href="https://strategicplan.umd.edu/commitment/we-partner-to-advance-the-public-good">
+          We Partner to Advance the Public Good
+        </a>
+        <a
+          class="strategic-commitments-circle strategic-commitments-circle--challenges"
+          href="https://strategicplan.umd.edu/commitment/we-take-on-humanitys-grand-challenges">
+          We Take on Humanity's Grand Challenges
+        </a>
+        <a
+          class="strategic-commitments-circle strategic-commitments-circle--people"
+          href="https://strategicplan.umd.edu/commitment/we-invest-in-people-and-communities">
+          We Invest in People &amp; Communities
+        </a>
+        <a
+          class="strategic-commitments-circle strategic-commitments-circle--core"
+          href="https://strategicplan.umd.edu/"
+          aria-label="Fearlessly Forward: University of Maryland Strategic Plan">
+          Fearlessly<br />Forward
+        </a>
+      </nav>
+    </div>
+  </section>
+
+  <section class="umd-layout-vertical-landing">
+    <umd-element-sticky-columns class="umd-layout-space-horizontal-larger" data-layout-position="100px">
+      <div slot="sticky-column">
+        <h2 class="umd-sans-largest-uppercase mb-md">New Strategic plan initiatives</h2>
+      </div>
+
+      <div slot="static-column">
+        <div class="umd-layout-grid-masonry">
+          <umd-element-card-icon>
+            <img slot="image" src="../images/projects/strategic-plan/we-reimagine-learning.svg" alt="" />
+            <h3 slot="headline"><a href="https://strategicplan.umd.edu/commitment/we-reimagine-learning">We reimagine learning</a></h3>
+            <p slot="text">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc.</p>
+          </umd-element-card-icon>
+
+          <umd-element-card-icon>
+            <img slot="image" src="../images/projects/strategic-plan/we-take-on-humanitys-grand-challenges.svg" alt="" />
+            <h3 slot="headline"><a href="https://strategicplan.umd.edu/commitment/we-take-on-humanitys-grand-challenges">We take on humanity's grand challenges</a></h3>
+            <p slot="text">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc.</p>
+          </umd-element-card-icon>
+
+          <umd-element-card-icon>
+            <img slot="image" src="../images/projects/strategic-plan/we-invest-in-people-and-communities.svg" alt="" />
+            <h3 slot="headline"><a href="https://strategicplan.umd.edu/commitment/we-invest-in-people-and-communities">We invest in people and communities</a></h3>
+            <p slot="text">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc.</p>
+          </umd-element-card-icon>
+
+          <umd-element-card-icon>
+            <img slot="image" src="../images/projects/strategic-plan/we-partner-to-advance-the-public-good.svg" alt="" />
+            <h3 slot="headline"><a href="https://strategicplan.umd.edu/commitment/we-partner-to-advance-the-public-good">We partner to advance the public good</a></h3>
+            <p slot="text">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc.</p>
+          </umd-element-card-icon>
+        </div>
+      </div>
+    </umd-element-sticky-columns>
+  </section>
+
+  <section class="umd-layout-vertical-landing">
+    <umd-element-pathway-highlight>
+      <h2 slot="headline">Our Vision</h2>
+      <div slot="text">
+        <p>We must be united in our noble and fearless purpose, because celebrating differences and leveling societal inequities must be among our greatest strengths, because grand challenges demand fearless ideas, and because progress will not be measured in individual achievement, but in our collective accomplishments.</p>
+        <p><strong><em><span class="forward">FEARLESSLY FORWARD</span> IN PURSUIT OF EXCELLENCE AND IMPACT FOR THE PUBLIC GOOD: THE UNIVERSITY OF MARYLAND STRATEGIC PLAN</em>&nbsp;&nbsp;</strong>presents a bold reimagining of what our university must be to uphold and expand our mission of service to humanity. Our vision is at once ambitious and fearless.</p>
+      </div>
+      <div slot="actions">
+        <umd-element-call-to-action data-display="secondary">
+          <a href="./guiding-principles.html">Our Guiding Principles</a>
+        </umd-element-call-to-action>
+      </div>
+      <p slot="highlight">To improve the lives of every person on Earth, we will reimagine teaching and learning; accelerate solutions to the grand challenges of our time through creativity and discovery; and forge a diverse and inclusive community where our differences are celebrated and equity is relentlessly pursued. Together, we will dedicate ourselves to advancing the public good because our individual well-being is enduringly bound to our collective well-being.</p>
+    </umd-element-pathway-highlight>
+  </section>
+
+  <section class="umd-layout-vertical-landing" style="background:#000;">
+    <umd-layout-image-expand>
+      <div slot="content" class="block max-w-[480px] w-full mr-auto">
+        <umd-element-quote data-display="featured" data-theme="dark" data-visual-transparent="true">
+          <p slot="quote">This is our time to reinvent our University. We must reenvision our campus and community as a modern flagship research university for the common good.</p>
+          <p slot="attribution">PRESIDENT DARRYLL J. PINES</p>
+        </umd-element-quote>
+      </div>
+      <img slot="image" src="../images/projects/strategic-plan/esj-red-stair.jpg" alt="" />
+    </umd-layout-image-expand>
+  </section>
+
+  <section class="umd-layout-vertical-landing">
+    <div class="umd-layout-space-horizontal-larger">
+      <umd-element-banner-promo>
+        <p slot="text"><em><span class="forward">FEARLESSLY FORWARD</span> IN PURSUIT OF EXCELLENCE AND IMPACT FOR THE PUBLIC GOOD:</em> <strong><em>THE UNIVERSITY OF MARYLAND STRATEGIC PLAN</em></strong> is a living document and will evolve and grow as we do. Please visit this site to follow our progress as we move fearlessly forward.</p>
+        <div slot="actions">
+          <umd-element-call-to-action data-display="primary" data-visual-size="large">
+            <a href="https://issuu.com/umaryland/docs/strategicplan2022?fr=sNDZhNTQ2MzkxOTM" rel="noopener" target="_blank">View Digital PDF (Issuu)</a>
+            <a slot="text" href="https://strategic-plan.files.svdcdn.com/production/file/strategic-plan-text-2022-b.txt?dm=1699301204" download>Text Version</a>
+          </umd-element-call-to-action>
+        </div>
+      </umd-element-banner-promo>
+    </div>
+  </section>
+
+  <!-- ========================================
+       4. FOOTER
+       Visual footer with campus background image.
+       Default image: ../images/large/campus/footer-campus.jpg
+  ======================================== -->
+  <umd-element-footer data-display="visual">
+    <a slot="logo" href="https://strategicplan.umd.edu/">
+      <img src="../images/logos/footer-logo.svg" alt="University of Maryland" onerror="this.onerror=null;this.src='../images/logos/footer-logo.svg';" />
+    </a>
+    <img slot="image" src="../images/large/campus/footer-campus.jpg" alt="University of Maryland campus" />
+  </umd-element-footer>
+
+  <!-- ========================================
+       GRID ENTRY ANIMATIONS
+       On by default for all layout grid utilities — children fade
+       in from below as they cross 35% visibility. Row-aware
+       staggering: siblings sharing a row get +350ms delay.
+       Bails out under prefers-reduced-motion: reduce.
+
+       OPT OUT per grid by adding data-animation="off" on the grid
+       container (e.g. for single-row CTA rows or stacks where the
+       fade reads as noise).
+  ======================================== -->
+  <script>
+    (function () {
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+      var GRID_SELECTORS = [
+        '.umd-layout-grid-gap-two',
+        '.umd-layout-grid-gap-three',
+        '.umd-layout-grid-gap-stacked',
+        '.umd-layout-grid-columns-four',
+        '.umd-layout-grid-masonry',
+        '.umd-layout-grid-inline-tablet-rows',
+        '.umd-animation-grid',
+        '.umd-grid-animation'
+      ].map(function (sel) { return sel + ':not([data-animation="off"])'; });
+
+      var style = document.createElement('style');
+      style.textContent = [
+        '@keyframes fade-in-from-bottom {',
+        '  from { opacity: 0; transform: translateY(50px); }',
+        '  to   { opacity: 1; transform: translateY(0); }',
+        '}',
+        ':where(' + GRID_SELECTORS.join(',') + ') > * {',
+        '  opacity: 0;',
+        '  transform: translateY(50px);',
+        '}',
+        '.umd-animation-transition-fade-bottom {',
+        '  animation: fade-in-from-bottom 1s forwards;',
+        '}'
+      ].join('\n');
+      document.head.appendChild(style);
+
+      function tagRowOffsets(grid) {
+        var children = Array.prototype.slice.call(grid.children);
+        var prevTop = null;
+        children.forEach(function (child) {
+          var top = child.getBoundingClientRect().top;
+          if (prevTop !== null && Math.abs(top - prevTop) < 1) {
+            child.dataset.animation = 'offset';
+          } else {
+            delete child.dataset.animation;
+          }
+          prevTop = top;
+        });
+      }
+
+      function init() {
+        var grids = document.querySelectorAll(GRID_SELECTORS.join(','));
+        if (!grids.length) return;
+
+        grids.forEach(tagRowOffsets);
+        window.addEventListener('resize', function () {
+          grids.forEach(tagRowOffsets);
+        });
+
+        var observer = new IntersectionObserver(function (entries) {
+          entries.forEach(function (entry) {
+            if (!entry.isIntersecting) return;
+            var el = entry.target;
+            el.style.animationDelay = el.dataset.animation === 'offset' ? '350ms' : '0ms';
+            el.classList.add('umd-animation-transition-fade-bottom');
+            observer.unobserve(el);
+          });
+        }, { threshold: 0.35 });
+
+        grids.forEach(function (grid) {
+          Array.prototype.forEach.call(grid.children, function (child) {
+            observer.observe(child);
+          });
+        });
+      }
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+      } else {
+        init();
+      }
+    })();
+  </script>
+
+</body>
+</html>

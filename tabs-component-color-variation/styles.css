@@ -1,0 +1,43 @@
+/*
+ * Tabs Component Color Variation
+ *
+ * Uses the existing umd-element-tabs component and changes only the label
+ * colors used to distinguish selected and unselected states.
+ */
+
+.tabs-color-variation div[slot="tabs"] button {
+  color: #757575 !important;
+  transition: color 160ms ease;
+}
+
+.tabs-color-variation div[slot="tabs"] button[aria-expanded="true"] {
+  color: #000000 !important;
+}
+
+.tabs-color-variation div[slot="tabs"] button:hover {
+  color: #454545 !important;
+}
+
+.tabs-color-variation div[slot="tabs"] button[aria-expanded="true"]:hover {
+  color: #000000 !important;
+}
+
+.tabs-color-variation div[slot="tabs"] button:focus-visible {
+  outline: 3px solid #2f7eda !important;
+  outline-offset: 2px !important;
+}
+
+.tabs-project-intro {
+  max-width: 800px;
+}
+
+.tabs-project-intro > p {
+  color: #454545;
+  font-size: 18px;
+  line-height: 1.5;
+  margin-top: 16px;
+}
+
+.tabs-project-demo {
+  max-width: 992px;
+}

@@ -1,0 +1,972 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Home — School of Public Policy | University of Maryland</title>
+
+  <!-- ============================================================
+       UMD Critical CSS — Hybrid CDN + Local
+       MUST precede cdn.js. If cdn.js loads first, elements upgrade
+       before :defined rules exist and container-type never gets set.
+
+       Load order:
+         <link> CDN bundles → <style> local subset → <script> cdn.js
+
+       Browsers block on stylesheet fetches before parsing the script
+       tag, so all CSS — both upstream and local — applies before
+       custom elements upgrade.
+
+       SOURCE OF TRUTH: styles/critical.css
+       The inline <style> block is a verbatim copy of styles/critical.css.
+       When updating, edit styles/critical.css first, then copy here.
+       See REQUIRED-CSS.md for what each rule does and why.
+  ============================================================ -->
+  <link rel="stylesheet" href="https://unpkg.com/@universityofmaryland/web-styles-library/css/font-faces.min.css">
+  <link rel="stylesheet" href="https://unpkg.com/@universityofmaryland/web-styles-library/css/tokens.min.css">
+  <link rel="stylesheet" href="https://unpkg.com/@universityofmaryland/web-styles-library/css/base.min.css">
+  <link rel="stylesheet" href="https://unpkg.com/@universityofmaryland/web-styles-library/css/typography.min.css">
+  <link rel="stylesheet" href="https://unpkg.com/@universityofmaryland/web-styles-library/css/web-components.min.css">
+  <link rel="stylesheet" href="https://unpkg.com/@universityofmaryland/web-styles-library/css/layout.min.css">
+  <style>
+    /* ============================================================
+       1. COMPONENT REGISTRATION GAP-FILLS
+       Re-add :defined rules for components missing from upstream
+       web-components.min.css. As those land upstream, drop these.
+       ============================================================ */
+
+    /* umd-element-utility-header — present on every page (band above the
+       nav header). Not in upstream bundle as of v1.8.11. */
+    umd-element-utility-header:not(:defined) { content-visibility: hidden; }
+    umd-element-utility-header { display: block; container-type: normal; }
+
+    /* umd-element-carousel* — not in upstream bundle. */
+    umd-element-carousel:not(:defined),
+    umd-element-carousel-cards:not(:defined),
+    umd-element-carousel-thumbnail:not(:defined),
+    umd-element-carousel-image:not(:defined),
+    umd-element-carousel-image-wide:not(:defined),
+    umd-element-carousel-multiple-image:not(:defined) {
+      content-visibility: hidden;
+    }
+    umd-element-carousel,
+    umd-element-carousel-cards,
+    umd-element-carousel-thumbnail,
+    umd-element-carousel-image,
+    umd-element-carousel-image-wide,
+    umd-element-carousel-multiple-image {
+      display: block;
+      container-type: inline-size;
+    }
+
+    /* umd-layout-image-expand — full-bleed pseudo-component.
+       Width:100% is project-specific (collapses without it). */
+    umd-layout-image-expand:not(:defined) { content-visibility: hidden; }
+    umd-layout-image-expand {
+      display: block;
+      container-type: inline-size;
+      width: 100%;
+    }
+
+    /* Project-specific spacing for breadcrumb (not a default in upstream). */
+    umd-element-breadcrumb:defined { margin-top: 16px; }
+
+
+    /* ============================================================
+       2. WATERMARK DECORATION
+       ============================================================ */
+    :is(.umd-text-decoration-watermark, .umd-watermark, .umd-watermark-dark) > * {
+      position: absolute;
+      top: 20px;
+      left: -2%;
+      color: #f1f1f1;
+      font-weight: 700;
+      text-transform: uppercase;
+      font-size: min(calc(44px + 13vw), 240px);
+      line-height: 0;
+      pointer-events: none;
+      user-select: none;
+      white-space: nowrap;
+    }
+    :is(.umd-text-decoration-watermark, .umd-watermark):not(.umd-watermark-dark) > * {
+      opacity: 0.6;
+      z-index: -1;
+    }
+    .umd-watermark-dark > * {
+      opacity: 0.12;
+      z-index: inherit;
+    }
+    @keyframes slide-in-from-left {
+      from { transform: translate(-15vw); }
+      to   { transform: translate(0); }
+    }
+    @media (prefers-reduced-motion: no-preference) {
+      @supports (animation-timeline: scroll()) {
+        :is(.umd-text-decoration-watermark, .umd-watermark, .umd-watermark-dark) > * {
+          animation: slide-in-from-left forwards;
+          animation-timeline: view();
+          animation-range-start: 0;
+          animation-range-end: 100vh;
+          transform: translate(-15vw);
+        }
+      }
+    }
+
+
+    /* ============================================================
+       3. LAYOUT AUGMENTATIONS
+       Extra properties on upstream layout classes that layout.min.css
+       doesn't include. These cascade over the upstream rules.
+       ============================================================ */
+
+    /* Upstream sets max-width/padding correctly. These extra properties are
+       required for watermark positioning and the internal @container query
+       used by umd-element-section-intro-wide. */
+    .umd-layout-space-horizontal-larger {
+      position: relative;
+      container-type: inline-size;
+      isolation: isolate;
+    }
+
+    /* Upstream omits align-items and flex-shrink on the columns-left layout.
+       align-items: flex-start prevents variable-height sidebar from stretching;
+       flex-shrink: 0 keeps the fixed 242px sidebar width under constraint.
+       Breakpoint matches upstream desktop.min (1024px) after DSYS-3063 fix —
+       sidebar width/margin moved from tablet.min (768px) to desktop.min. */
+    @media (min-width: 1024px) {
+      .umd-layout-space-columns-left { align-items: flex-start; }
+      .umd-layout-space-columns-left > *:first-child { flex-shrink: 0; }
+    }
+
+
+    /* ============================================================
+       4. BACKGROUND-FULL-DARK BUG FIX
+       layout.min.css serializes the highDef breakpoint as
+       @media([object Object]) — ignored by browsers — because
+       background/full.ts:42 uses media.queries.highDef (the whole
+       object) instead of media.queries.highDef.min. This rule
+       cascades over the broken upstream with the correct breakpoint.
+       ============================================================ */
+    .umd-layout-background-full-dark {
+      background-color: #000000;
+      padding: 48px 0;
+    }
+    @media (min-width: 768px) {
+      .umd-layout-background-full-dark { padding: 80px 0; }
+    }
+    @media (min-width: 1200px) {
+      .umd-layout-background-full-dark { padding: 104px 0; }
+    }
+
+
+    /* ============================================================
+       5. MASONRY SECTION-INTRO COMPANION
+       Compensates for masonry's negative top margin when a section
+       intro immediately precedes it. The base .umd-layout-grid-masonry
+       class comes from layout.min.css.
+       ============================================================ */
+    @media (min-width: 768px) {
+      umd-element-section-intro + .umd-layout-grid-masonry,
+      umd-element-section-intro-wide + .umd-layout-grid-masonry { padding-top: 32px; }
+    }
+    @media (min-width: 1024px) {
+      umd-element-section-intro + .umd-layout-grid-masonry,
+      umd-element-section-intro-wide + .umd-layout-grid-masonry { padding-top: 40px; }
+    }
+
+
+    /* ============================================================
+       6. COLOR UTILITIES — not in upstream tokens or typography bundles
+       ============================================================ */
+    .text-black { color: #000; }
+    .text-white { color: #ffffff; }
+
+
+    /* ============================================================
+       7. RICH TEXT ADVANCED — editorial body copy
+       Light and dark variants. 18px/1.5em with link hover styles.
+       ============================================================ */
+
+    /* Light variant */
+    .umd-text-rich-advanced {
+      font-size: 18px;
+      line-height: 1.5em;
+    }
+    .umd-text-rich-advanced * {
+      color: #454545;
+    }
+    .umd-text-rich-advanced > * {
+      font-size: 18px;
+      margin-top: 24px;
+    }
+    .umd-text-rich-advanced > *:first-child {
+      margin-top: 0;
+    }
+    .umd-text-rich-advanced a {
+      color: #000000;
+      background-image: linear-gradient(#000000, #000000);
+      position: relative;
+      background-position: left calc(100% - 1px);
+      background-repeat: no-repeat;
+      background-size: 100% 1px;
+      transition: color 0.5s, background-size 0.5s, background-image 0.5s, background-position 0.5s;
+    }
+    .umd-text-rich-advanced a:hover,
+    .umd-text-rich-advanced a:focus {
+      background-image: linear-gradient(#E21833, #E21833);
+    }
+
+    /* Dark variant */
+    .umd-text-rich-advanced-dark {
+      font-size: 18px;
+      line-height: 1.5em;
+    }
+    .umd-text-rich-advanced-dark p,
+    .umd-text-rich-advanced-dark li { color: #ffffff; }
+    .umd-text-rich-advanced-dark a {
+      color: #ffffff;
+      background-image: linear-gradient(#ffffff, #ffffff);
+      position: relative;
+      background-position: left calc(100% - 1px);
+      background-repeat: no-repeat;
+      background-size: 100% 1px;
+      transition: color 0.5s, background-size 0.5s, background-image 0.5s, background-position 0.5s;
+    }
+    .umd-text-rich-advanced-dark a:hover,
+    .umd-text-rich-advanced-dark a:focus {
+      background-image: linear-gradient(#FFD200, #FFD200);
+    }
+
+
+    /* ============================================================
+       8. INTERIOR PAGE LAYOUT UTILITIES
+       ============================================================ */
+
+    /* Content column max-width (Tailwind utility) */
+    .max-w-\[800px\] { max-width: 800px; }
+
+
+    /* ============================================================
+       9. IMAGE-EXPAND CONTENT UTILITIES
+       Classes for div[slot="content"] inside umd-layout-image-expand.
+       ============================================================ */
+    .max-w-\[480px\] { max-width: 480px; }
+    .w-full          { width: 100%; }
+    .block           { display: block; }
+    .mr-auto         { margin-right: auto; }
+    .pl-md           { padding-left: 24px; }
+
+    .umd-adjacent-line-text { position: relative; }
+    .umd-adjacent-line-text::before {
+      content: "";
+      display: block;
+      position: absolute;
+      top: 0;
+      width: 2px;
+      height: 100%;
+      background-color: #E21833;
+      left: -24px;
+    }
+
+    /* Body copy on dark/image backgrounds — white text, animated underline links */
+    .umd-text-rich-simple-large-dark {
+      font-size: 18px;
+      line-height: 1.5em;
+      color: #ffffff;
+    }
+    .umd-text-rich-simple-large-dark * { color: #ffffff; }
+    .umd-text-rich-simple-large-dark > * { font-size: 18px; margin-top: 24px; }
+    .umd-text-rich-simple-large-dark > *:first-child { margin-top: 0; }
+    .umd-text-rich-simple-large-dark a {
+      color: #ffffff;
+      background-image: linear-gradient(#ffffff, #ffffff);
+      position: relative;
+      background-position: left calc(100% - 1px);
+      background-repeat: no-repeat;
+      background-size: 100% 1px;
+      transition: color 0.5s, background-size 0.5s, background-image 0.5s, background-position 0.5s;
+    }
+    .umd-text-rich-simple-large-dark a:hover,
+    .umd-text-rich-simple-large-dark a:focus {
+      background-image: linear-gradient(#FFD200, #FFD200);
+    }
+
+
+    /* ============================================================
+       10. STICKY COLUMNS UTILITIES
+       Spacing tokens for slot content inside umd-element-sticky-columns.
+       ============================================================ */
+    .mb-md { margin-bottom: 24px; }
+    .mb-sm { margin-bottom: 16px; }
+
+
+    /* ============================================================
+       11. UTILITY NAVIGATION / SHELL-ITEM LINK STYLES
+       The shadow DOM ::slotted(*) only reaches div[slot="utility-navigation"],
+       NOT descendants — all link and separator styles must live here.
+
+       Canonical production pattern (matches umd.edu markup):
+       - Slot container: plain <div slot="utility-navigation">
+       - Each item: div.umd-shell-utility-item > div.umd-shell-utility-actions
+                    > a.umd-sans-smaller (or button for dropdowns)
+       - Dropdown: sibling div.umd-shell-utility-links[aria-hidden] panel
+
+       TWO LAYERS — keep them separate:
+       A. BASE (unscoped) — the reusable .umd-shell-utility-item pattern.
+          Used in the nav-header utility slot AND reused in pathway /
+          banner-promo / section-intro action slots (RULES.md §5). These
+          rules MUST stay unscoped or the reuse renders unstyled.
+       B. NAV-HEADER (scoped) — overrides the shadow ::slotted(*) gap:24px
+          and adds dropdown anchoring + panel. Only meaningful in the slot.
+       ============================================================ */
+
+    /* ---- A. BASE: reusable shell-item pattern (do NOT scope) ---- */
+    .umd-shell-utility-item .umd-shell-utility-actions {
+      align-items: center;
+      display: flex;
+      gap: 4px;
+    }
+    .umd-shell-utility-item:not(:last-child) .umd-shell-utility-actions {
+      border-right: 1px solid #E6E6E6;
+      margin-right: 16px;
+      padding-right: 16px;
+    }
+    .umd-shell-utility-item a {
+      color: #242424;
+      text-decoration: none;
+    }
+    .umd-shell-utility-item a:hover,
+    .umd-shell-utility-item a:focus {
+      color: #E21833;
+    }
+
+    /* ---- B. NAV-HEADER: scoped to the utility-navigation slot ---- */
+    /* Override the shadow ::slotted(*) gap:24px (the wrapper margins above
+       handle item spacing in the shell pattern). */
+    umd-element-navigation-header div[slot="utility-navigation"] {
+      gap: 0;
+    }
+    umd-element-navigation-header div[slot="utility-navigation"] .umd-shell-utility-item {
+      position: relative;
+      z-index: 99999;
+    }
+    umd-element-navigation-header div[slot="utility-navigation"] .umd-shell-utility-item button {
+      color: #242424;
+      text-decoration: none;
+    }
+    /* Dropdown panel (shown via JS toggling aria-hidden — see LAYOUT-PATTERNS.md) */
+    umd-element-navigation-header div[slot="utility-navigation"] .umd-shell-utility-item .umd-shell-utility-links {
+      display: none;
+    }
+    umd-element-navigation-header div[slot="utility-navigation"] .umd-shell-utility-item .umd-shell-utility-links > * {
+      color: #242424;
+      display: block;
+      padding: 12px;
+      text-align: right;
+      text-decoration: none;
+    }
+    umd-element-navigation-header div[slot="utility-navigation"] .umd-shell-utility-item .umd-shell-utility-links a:hover,
+    umd-element-navigation-header div[slot="utility-navigation"] .umd-shell-utility-item .umd-shell-utility-links a:focus {
+      color: #a90007;
+    }
+    umd-element-navigation-header div[slot="utility-navigation"] .umd-shell-utility-item .umd-shell-utility-links[aria-hidden="false"] {
+      align-items: flex-end;
+      background-color: #fafafa;
+      box-shadow: -1px 9px 32px -10px rgba(0, 0, 0, .19);
+      display: flex;
+      flex-direction: column;
+      position: absolute;
+      right: 0;
+      top: 16px;
+      width: 200px;
+      max-width: 80vw;
+    }
+
+
+    /* ============================================================
+       12. BANNER-PROMO STACKED ACTIONS — light-DOM column flex.
+       Pairs with the shadow-DOM injection in OVERRIDES.md so the 8px
+       gap is visible regardless of where children render.
+       ============================================================ */
+    .banner-promo-actions {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 8px;
+    }
+
+
+    /* ============================================================
+       13. SECTION DIVIDER — standalone <hr> utility.
+       ============================================================ */
+    .umd-text-divider {
+      border: none;
+      border-top: 1px solid #000000;
+      margin: 0 0 24px 0;
+    }
+    .umd-text-divider.dark {
+      border-top-color: #ffffff;
+    }
+
+
+    /* ============================================================
+       14. TRAILING-LINE LABEL — section eyebrow with horizontal line
+       Source: @universityofmaryland/web-styles-library: element.text.line.trailing
+       ============================================================ */
+    .umd-text-line-trailing,
+    .umd-text-line-trailing-dark {
+      font-family: "Interstate", Helvetica, Arial, Verdana, sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 0.16em;
+      line-height: 1.42em;
+      text-transform: uppercase;
+      position: relative;
+      overflow: hidden;
+      background-color: #ffffff;
+    }
+    .umd-text-line-trailing::before,
+    .umd-text-line-trailing-dark::before {
+      content: "";
+      position: absolute;
+      top: 9px;
+      right: 0;
+      width: 100vw;
+      height: 1px;
+      background: #000000;
+      z-index: 1;
+    }
+    .umd-text-line-trailing > span,
+    .umd-text-line-trailing-dark > span {
+      position: relative;
+      background-color: inherit;
+      padding-right: 8px;
+      z-index: 2;
+    }
+    .umd-text-line-trailing + *,
+    .umd-text-line-trailing-dark + * {
+      margin-top: 40px;
+    }
+    .umd-text-line-trailing-dark {
+      background-color: #000000;
+      color: #ffffff;
+    }
+    .umd-text-line-trailing-dark::before {
+      background: #ffffff;
+    }
+
+
+    /* ============================================================
+       15. NO-GAP CARD GRID — 3 columns flush together
+       ============================================================ */
+    .umd-layout-grid-cards-no-gap {
+      display: grid;
+      grid-template-columns: 1fr;
+    }
+    @media (min-width: 768px) {
+      .umd-layout-grid-cards-no-gap {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+    .umd-layout-grid-cards-no-gap > * {
+      height: 100%;
+    }
+
+
+    /* ============================================================
+       16. OVERLAY CARD .size-large MIN-HEIGHT
+       Source: design-system/packages/styles/source/web-components.ts
+               (cardOverlay custom rules — umd-element-card-overlay.size-large)
+       ============================================================ */
+    umd-element-card-overlay.size-large {
+      min-height: 320px;
+    }
+    @media (min-width: 768px) {
+      umd-element-card-overlay.size-large {
+        min-height: 560px;
+      }
+    }
+
+
+    /* ============================================================
+       17. TUITION & AID 2-COLUMN GRID
+       Asymmetric content split: 1.5fr / 1fr at 1024px+.
+       ============================================================ */
+    .umd-layout-grid-tuition-two {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 32px;
+    }
+    @media (min-width: 1024px) {
+      .umd-layout-grid-tuition-two {
+        grid-template-columns: 1.5fr 1fr;
+        gap: 80px;
+      }
+    }
+
+
+    /* ============================================================
+       18. FULL-WIDTH OUTLINE BUTTON — light-DOM utility class
+       Visually mirrors umd-element-call-to-action data-display="outline"
+       but stretches to fill its grid cell. Use when the DS web component's
+       shadow-DOM max-width:380px would fight against your layout.
+       ============================================================ */
+    .umd-action-outline-block {
+      display: block;
+      width: 100%;
+      box-sizing: border-box;
+      padding: 12px 24px;
+      font-family: "Interstate", Helvetica, Arial, Verdana, sans-serif;
+      font-size: 16px;
+      font-weight: 800;
+      line-height: 1.28em;
+      text-align: center;
+      text-decoration: none;
+      background-color: #ffffff;
+      border: 1px solid #242424;
+      color: #000000;
+      transition: background 0.5s ease-in-out, border 0.5s ease-in-out, color 0.5s ease-in-out;
+    }
+    .umd-action-outline-block:hover,
+    .umd-action-outline-block:focus {
+      background-color: #242424;
+      color: #ffffff;
+    }
+    .umd-action-outline-block.dark {
+      background-color: transparent;
+      border: 1px solid #ffffff;
+      color: #ffffff;
+    }
+    .umd-action-outline-block.dark:hover,
+    .umd-action-outline-block.dark:focus {
+      background-color: #ffffff;
+      color: #000000;
+    }
+  </style>
+
+  <script src="https://unpkg.com/@universityofmaryland/web-components-library@1.18.12/dist/cdn.js"></script>
+</head>
+<body>
+
+  <!-- ========================================
+       1. GLOBAL UNIVERSITY HEADER
+       Hardcoded. Never modified. Zero config.
+  ======================================== -->
+  <umd-element-navigation-utility data-alert-off="true" role="navigation" aria-label="Utility navigation"></umd-element-navigation-utility>
+
+  <umd-element-utility-header></umd-element-utility-header>
+
+  <!-- ========================================
+       2. SITE NAVIGATION HEADER
+       Replace logo, nav items, and utility links.
+  ======================================== -->
+  <umd-element-navigation-header sticky class="umd-layout-space-horizontal-full">
+    <a slot="logo" href="/">
+      <img src="../images/projects/spp/spp-main.svg" alt="University of Maryland School of Public Policy" onerror="this.onerror=null;this.src='../images/logos/primary-logo-dark.svg';" />
+    </a>
+    <nav slot="main-navigation">
+      <umd-element-nav-item>
+        <a slot="primary-link" href="/our-community">Our Community</a>
+        <div slot="dropdown-links">
+          <a href="/our-community/public-policy-maryland-way">The Maryland Way</a>
+          <a href="/our-community/belonging-community">Belonging &amp; Community</a>
+          <a href="/our-community/student-life">Student Life</a>
+          <a href="/our-new-home">Our New Home</a>
+          <a href="/our-community/school-leadership">School Leadership</a>
+        </div>
+      </umd-element-nav-item>
+      <umd-element-nav-item>
+        <a slot="primary-link" href="/your-education">Your Education</a>
+        <div slot="dropdown-links">
+          <a href="/your-education/undergraduate">Undergraduate</a>
+          <a href="/your-education/masters">Master's</a>
+          <a href="/your-education/phd">PhD</a>
+          <a href="/your-education/executive-development">Executive Development</a>
+          <a href="/your-education/certificates">Certificates</a>
+        </div>
+      </umd-element-nav-item>
+      <umd-element-nav-item>
+        <a slot="primary-link" href="/admissions">Admissions</a>
+        <div slot="dropdown-links">
+          <a href="/admissions/undergraduate-admissions">Undergraduate Admissions</a>
+          <a href="/admissions/masters-admissions">Master's Admissions</a>
+          <a href="/admissions/phd-admissions">PhD Admissions</a>
+          <a href="/admissions/certificate-admissions">Certificates</a>
+          <a href="/admissions/financial-aid-scholarships">Financial Aid &amp; Scholarships</a>
+        </div>
+      </umd-element-nav-item>
+      <umd-element-nav-item>
+        <a slot="primary-link" href="/research-impact">Research &amp; Impact</a>
+        <div slot="dropdown-links">
+          <a href="/research-impact/centers-institutes">Centers &amp; Institutes</a>
+          <a href="/research-impact/strategic-focus-areas">Strategic Focus Areas</a>
+          <a href="/research-impact/projects-spp">Projects</a>
+          <a href="/research-impact/publications">Publications</a>
+        </div>
+      </umd-element-nav-item>
+      <umd-element-nav-item>
+        <a slot="primary-link" href="/career-connections">Career Connections</a>
+      </umd-element-nav-item>
+    </nav>
+    <div slot="utility-navigation" style="gap:0">
+      <div class="umd-shell-utility-item">
+        <div class="umd-shell-utility-actions"><a class="umd-sans-smaller" href="/news">News</a></div>
+      </div>
+      <div class="umd-shell-utility-item">
+        <div class="umd-shell-utility-actions"><a class="umd-sans-smaller" href="/events">Events</a></div>
+      </div>
+      <div class="umd-shell-utility-item">
+        <div class="umd-shell-utility-actions"><a class="umd-sans-smaller" href="/contact-spp">Contact</a></div>
+      </div>
+    </div>
+    <div slot="primary-slide-links">
+      <a href="/our-community"><span>Our Community</span></a>
+      <a href="/your-education"><span>Your Education</span></a>
+      <a href="/admissions"><span>Admissions</span></a>
+      <a href="/research-impact"><span>Research &amp; Impact</span></a>
+      <a href="/career-connections"><span>Career Connections</span></a>
+      <a href="/news"><span>News</span></a>
+      <a href="/events"><span>Events</span></a>
+    </div>
+    <div slot="primary-slide-secondary-links">
+      <a href="/admissions">Apply Now</a>
+      <a href="/admissions/connect-us">Request Info</a>
+    </div>
+  </umd-element-navigation-header>
+
+  <!-- ========================================
+       3. PAGE CONTENT
+       Replace the sections below with actual content.
+       Use umd-layout-vertical-landing on each <section>.
+       Use umd-layout-space-horizontal-* wrappers for content width.
+  ======================================== -->
+
+  <section class="umd-layout-vertical-landing">
+    <umd-element-carousel-image-wide title="University of Maryland School of Public Policy">
+      <div slot="slides">
+        <figure>
+          <img src="../images/projects/spp/header-damon-wilson.jpg" alt="National Endowment for Democracy president Damon Wilson at commencement" />
+          <div data-headline>National Endowment for Democracy President Encourages Graduates to Meet Global Challenges with Leadership and Integrity</div>
+          <div data-text>Learn More</div>
+        </figure>
+        <figure>
+          <img src="../images/projects/spp/header-cherry-blossoms.jpg" alt="Cherry blossoms on the University of Maryland campus" />
+          <div data-headline>Top 25 in U.S. News Graduate Public Affairs Rankings</div>
+          <div data-text>Learn More</div>
+        </figure>
+        <figure>
+          <img src="../images/projects/spp/header-testudo.jpg" alt="Testudo statue on campus" />
+          <div data-headline>Two Public Policy Doctoral Students Named P.E.O. International Peace Scholars</div>
+          <div data-text>Learn More</div>
+        </figure>
+        <figure>
+          <img src="../images/projects/spp/header-sundial.jpg" alt="Sundial on the University of Maryland campus" />
+          <div data-headline>Policy Students Use Their Voices to Advance New College Park Law Protecting Renters</div>
+          <div data-text>Learn More</div>
+        </figure>
+      </div>
+    </umd-element-carousel-image-wide>
+  </section>
+
+  <section class="umd-layout-vertical-landing">
+    <div class="umd-layout-space-horizontal-larger">
+      <div class="umd-layout-vertical-landing-child">
+        <umd-element-section-intro-wide>
+          <h2 slot="headline">Our Programs</h2>
+        </umd-element-section-intro-wide>
+      </div>
+      <div class="umd-layout-grid-gap-four">
+        <umd-element-card>
+          <h3 slot="headline"><a href="/your-education/undergraduate">Undergraduate</a></h3>
+          <p slot="text">Translate your passion into action through an interdisciplinary program grounded in hands-on learning</p>
+          <div slot="actions"><umd-element-call-to-action data-display="secondary"><a href="/your-education/undergraduate">Learn More</a></umd-element-call-to-action></div>
+        </umd-element-card>
+        <umd-element-card>
+          <h3 slot="headline"><a href="/your-education/masters">Masters</a></h3>
+          <p slot="text">Develop the skills, expertise and network you need to advance innovative solutions to complex problems</p>
+          <div slot="actions"><umd-element-call-to-action data-display="secondary"><a href="/your-education/masters">Learn More</a></umd-element-call-to-action></div>
+        </umd-element-card>
+        <umd-element-card>
+          <h3 slot="headline"><a href="/your-education/phd">PhD</a></h3>
+          <p slot="text">Explore emerging and overlooked issues as you define the future of policy research, education and practice</p>
+          <div slot="actions"><umd-element-call-to-action data-display="secondary"><a href="/your-education/phd">Learn More</a></umd-element-call-to-action></div>
+        </umd-element-card>
+        <umd-element-card>
+          <h3 slot="headline"><a href="/your-education/executive-development">Executive Development</a></h3>
+          <p slot="text">Strengthen your skills and networks to take the next step as a policy leader</p>
+          <div slot="actions"><umd-element-call-to-action data-display="secondary"><a href="/your-education/executive-development">Learn More</a></umd-element-call-to-action></div>
+        </umd-element-card>
+      </div>
+    </div>
+  </section>
+
+  <section class="umd-layout-vertical-landing">
+    <umd-element-carousel-cards>
+      <h2 slot="headline">Make Your Impact in the World</h2>
+      <p slot="text">From local to global, our students, faculty and alumni are changing the world for the better</p>
+      <div slot="cards">
+        <umd-element-card-overlay type="image" data-theme="dark">
+          <img slot="image" src="../images/projects/spp/card-cui.png" alt="Cui Honored with Provost’s Excellence Award for Research" />
+          <h3 slot="headline"><a href="/news/cui-honored-provosts-excellence-award-research">Cui Honored with Provost’s Excellence Award for Research</a></h3>
+          <div slot="actions"><umd-element-call-to-action data-display="secondary" data-theme="dark"><a href="/news/cui-honored-provosts-excellence-award-research">Read More</a></umd-element-call-to-action></div>
+        </umd-element-card-overlay>
+        <umd-element-card-overlay type="image" data-theme="dark">
+          <img slot="image" src="../images/projects/spp/card-sims.jpg" alt="School Welcomes LTG(R) Douglas A. Sims II" />
+          <h3 slot="headline"><a href="/news/school-welcomes-ltgr-douglas-da-sims-ii-distinguished-public-service-fellow">School Welcomes LTG(R) Douglas A. “D.A.” Sims II as Distinguished Public Service Fellow</a></h3>
+          <div slot="actions"><umd-element-call-to-action data-display="secondary" data-theme="dark"><a href="/news/school-welcomes-ltgr-douglas-da-sims-ii-distinguished-public-service-fellow">Read More</a></umd-element-call-to-action></div>
+        </umd-element-card-overlay>
+        <umd-element-card-overlay data-theme="dark">
+          <h3 slot="headline"><a href="/research-impact/centers-institutes">7 research centers and institutes advancing solutions to pressing challenges</a></h3>
+          <div slot="actions"><umd-element-call-to-action data-display="secondary" data-theme="dark"><a href="/research-impact/centers-institutes">Learn More</a></umd-element-call-to-action></div>
+        </umd-element-card-overlay>
+        <umd-element-card-overlay type="image" data-theme="dark">
+          <img slot="image" src="../images/projects/spp/card-venezuela.jpg" alt="Venezuela flag" />
+          <h3 slot="headline"><a href="/news/policy-panel-expanding-use-us-military-force-venezuela">No Clear Winners in Expanding Use of U.S. Military Force in Venezuela</a></h3>
+          <div slot="actions"><umd-element-call-to-action data-display="secondary" data-theme="dark"><a href="/news/policy-panel-expanding-use-us-military-force-venezuela">Read More</a></umd-element-call-to-action></div>
+        </umd-element-card-overlay>
+        <umd-element-card-overlay type="image" data-theme="dark">
+          <img slot="image" src="../images/projects/spp/card-combat.jpg" alt="Book cover for combat research" />
+          <h3 slot="headline"><a href="/news/fight-smarter-not-bigger-policy-professors-new-book-reframes-role-combat-sub-state-conflict">Fight Smarter, Not Bigger: Policy Professor's New Book Reframes the Role of Combat in Sub-State Conflict</a></h3>
+          <div slot="actions"><umd-element-call-to-action data-display="secondary" data-theme="dark"><a href="/news/fight-smarter-not-bigger-policy-professors-new-book-reframes-role-combat-sub-state-conflict">Read More</a></umd-element-call-to-action></div>
+        </umd-element-card-overlay>
+        <umd-element-card-overlay type="image" data-theme="dark">
+          <img slot="image" src="../images/projects/spp/card-climate-ambition.png" alt="Climate ambition data platform visualization" />
+          <h3 slot="headline"><a href="/news/new-first-its-kind-platform-assesses-country-climate-ambition-and-charts-how-increased">First-of-its-kind Platform Assesses Country Climate Ambition, Charts How Increased Ambition Can Cut Global Emissions</a></h3>
+          <div slot="actions"><umd-element-call-to-action data-display="secondary" data-theme="dark"><a href="/news/new-first-its-kind-platform-assesses-country-climate-ambition-and-charts-how-increased">Read More</a></umd-element-call-to-action></div>
+        </umd-element-card-overlay>
+        <umd-element-card-overlay data-theme="dark">
+          <h3 slot="headline"><a href="/research-impact/strategic-focus-areas">6 strategic focus areas integrating teaching, research and practice across critical policy areas</a></h3>
+          <div slot="actions"><umd-element-call-to-action data-display="secondary" data-theme="dark"><a href="/research-impact/strategic-focus-areas">Learn More</a></umd-element-call-to-action></div>
+        </umd-element-card-overlay>
+        <umd-element-card-overlay type="image" data-theme="dark">
+          <img slot="image" src="../images/projects/spp/card-aging-research.jpg" alt="Aging research partnership meeting" />
+          <h3 slot="headline"><a href="/news/umd-leads-partnership-strengthen-aging-research-south">UMD Leads Partnership to Strengthen Aging Research in the South</a></h3>
+          <div slot="actions"><umd-element-call-to-action data-display="secondary" data-theme="dark"><a href="/news/umd-leads-partnership-strengthen-aging-research-south">Read More</a></umd-element-call-to-action></div>
+        </umd-element-card-overlay>
+        <umd-element-card-overlay type="image" data-theme="dark">
+          <img slot="image" src="../images/projects/spp/card-money-laundering.jpg" alt="Money laundering research illustration" />
+          <h3 slot="headline"><a href="/news/banks-efforts-curb-money-laundering-fail-abysmally-says-umd-criminologist">Banks’ Efforts to Curb Money Laundering Fail Abysmally, Says UMD Criminologist</a></h3>
+          <div slot="actions"><umd-element-call-to-action data-display="secondary" data-theme="dark"><a href="/news/banks-efforts-curb-money-laundering-fail-abysmally-says-umd-criminologist">Read More</a></umd-element-call-to-action></div>
+        </umd-element-card-overlay>
+        <umd-element-card-overlay data-theme="dark">
+          <h3 slot="headline"><a href="/research-impact/projects-spp">Dozens of projects engaging students and faculty in issues that matter</a></h3>
+          <div slot="actions"><umd-element-call-to-action data-display="secondary" data-theme="dark"><a href="/research-impact/projects-spp">Learn More</a></umd-element-call-to-action></div>
+        </umd-element-card-overlay>
+      </div>
+    </umd-element-carousel-cards>
+  </section>
+
+  <section class="umd-layout-vertical-landing">
+    <div class="umd-layout-space-horizontal-larger">
+      <div class="umd-layout-grid-gap-three">
+        <umd-element-stat data-visual-size="large" data-decoration-line>
+          <span slot="stat">7</span>
+          <div slot="text"><p>research centers and institutes advancing solutions to pressing challenges</p></div>
+        </umd-element-stat>
+        <umd-element-stat data-visual-size="large" data-decoration-line>
+          <span slot="stat">6</span>
+          <div slot="text"><p>strategic focus areas integrating teaching, research and practice across critical policy areas</p></div>
+        </umd-element-stat>
+        <umd-element-stat data-visual-size="large" data-decoration-line>
+          <span slot="stat">Dozens</span>
+          <div slot="text"><p>of projects engaging students and faculty in issues that matter</p></div>
+        </umd-element-stat>
+      </div>
+    </div>
+  </section>
+
+  <section class="umd-layout-vertical-landing">
+    <umd-layout-image-expand>
+      <div slot="content" class="block max-w-[480px] w-full mr-auto">
+        <umd-element-quote data-display="featured" data-theme="dark" data-visual-transparent="true">
+          <blockquote slot="quote">The education that I received not only prepared me for my first job after graduating, but continues to inform me, today, nearly 30 years after leaving College Park.</blockquote>
+          <p slot="attribution">Deputy Secretary of Defense Dr. Kathleen Hicks ’93</p>
+        </umd-element-quote>
+      </div>
+      <img slot="image" src="../images/projects/spp/quote-kathleen-hicks.jpg" alt="Public policy gathering at the University of Maryland" />
+    </umd-layout-image-expand>
+  </section>
+
+  <section class="umd-layout-vertical-landing">
+    <div class="umd-layout-space-horizontal-larger">
+      <div class="umd-layout-vertical-landing-child">
+        <umd-element-section-intro-wide>
+          <h2 slot="headline">Experience Policy the Maryland Way</h2>
+          <div slot="text">
+            <p>Join a community at the center of the policy world committed to making a difference</p>
+          </div>
+        </umd-element-section-intro-wide>
+      </div>
+      <div class="umd-layout-grid-columns-four">
+        <umd-element-card-overlay type="image" data-theme="dark">
+          <img slot="image" src="../images/projects/spp/card-gavin-neubauer.jpg" alt="Policy Student Moderates Berwyn Heights Election Forum" />
+          <h3 slot="headline"><a href="/news/policy-student-moderates-berwyn-heights-election-forum">Policy Student Moderates Berwyn Heights Election Forum</a></h3>
+        </umd-element-card-overlay>
+        <umd-element-card-overlay type="image" data-theme="dark">
+          <img slot="image" src="../images/projects/spp/card-kimberley-osias.jpg" alt="Policy Student Empowers Young Women Through Community and Policy" />
+          <h3 slot="headline"><a href="/news/policy-student-empowers-young-women-through-community-and-policy">Policy Student Empowers Young Women Through Community and Policy</a></h3>
+        </umd-element-card-overlay>
+        <umd-element-card-overlay data-theme="dark">
+          <h3 slot="headline"><a href="/career-connections">Learn and work in the center of the policy world</a></h3>
+        </umd-element-card-overlay>
+        <umd-element-card-overlay type="image" data-theme="dark">
+          <img slot="image" src="../images/projects/spp/card-lucy-mbanaja.jpg" alt="Policy Student Connects Classroom Learning to Congressional Work" />
+          <h3 slot="headline"><a href="/news/policy-student-connects-classroom-learning-congressional-work">Policy Student Connects Classroom Learning to Congressional Work</a></h3>
+        </umd-element-card-overlay>
+        <umd-element-card-overlay type="image" data-theme="dark">
+          <img slot="image" src="../images/projects/spp/card-olivia-parker.jpg" alt="Alum Turns Career Transition into Global Opportunity" />
+          <h3 slot="headline"><a href="/news/alum-turns-career-transition-global-opportunity">Alum Turns Career Transition into Global Opportunity</a></h3>
+        </umd-element-card-overlay>
+        <umd-element-card-overlay data-theme="dark">
+          <h3 slot="headline"><a href="/your-education/experiential-learning">Engage with real issues and people</a></h3>
+        </umd-element-card-overlay>
+        <umd-element-card-overlay type="image" data-theme="dark">
+          <img slot="image" src="../images/projects/spp/card-annapolis-state-house.jpg" alt="Three UMD Public Policy Students Selected for Prestigious Maryland Public Service Scholars Program" />
+          <h3 slot="headline"><a href="/news/three-umd-public-policy-students-selected-prestigious-maryland-public-service-scholars-program">Three UMD Public Policy Students Selected for Prestigious Maryland Public Service Scholars Program</a></h3>
+        </umd-element-card-overlay>
+      </div>
+    </div>
+  </section>
+
+  <section class="umd-layout-vertical-landing">
+    <div class="umd-layout-space-horizontal-larger">
+      <div class="umd-layout-vertical-landing-child">
+        <umd-element-section-intro-wide>
+          <h2 slot="headline">Events</h2>
+          <div slot="text">
+            <p>Hear from a range of illustrious speakers about groundbreaking research, the student experience and the latest in the policy world. From lunchtime lectures to service events, we offer a range of ways to get involved with your fellow #PolicyTerps.</p>
+          </div>
+          <umd-element-call-to-action data-display="secondary" slot="actions">
+            <a href="/events">View All Events</a>
+          </umd-element-call-to-action>
+        </umd-element-section-intro-wide>
+      </div>
+      <div class="umd-layout-grid-gap-stacked">
+        <umd-element-card data-display="list">
+          <h3 slot="headline"><a href="/events">Events will be posted soon</a></h3>
+          <p slot="text">View All Events</p>
+        </umd-element-card>
+      </div>
+    </div>
+  </section>
+
+  <section class="umd-layout-vertical-landing">
+    <umd-element-pathway data-display="overlay" data-theme="dark">
+      <img slot="image" src="../images/projects/spp/discover-class-2023.jpg" alt="School of Public Policy graduates" />
+      <h2 slot="headline">Discover how you can make your impact</h2>
+      <div slot="actions">
+        <umd-element-call-to-action data-display="primary" data-theme="dark">
+          <a href="/admissions">Apply Now</a>
+        </umd-element-call-to-action>
+        <umd-element-call-to-action data-display="secondary" data-theme="dark">
+          <a href="/admissions/connect-us">Request Info</a>
+        </umd-element-call-to-action>
+      </div>
+    </umd-element-pathway>
+  </section>
+
+  <!-- ========================================
+       4. FOOTER
+       Visual footer with campus background image.
+       Default image: ../images/large/campus/footer-campus.jpg
+  ======================================== -->
+  <umd-element-footer data-display="visual">
+    <a slot="logo" href="/">
+      <img src="../images/logos/footer-logo.svg" alt="University of Maryland School of Public Policy" />
+    </a>
+    <img slot="image" src="../images/large/campus/footer-campus.jpg" alt="University of Maryland campus" />
+  </umd-element-footer>
+
+  <!-- ========================================
+       GRID ENTRY ANIMATIONS
+       On by default for all layout grid utilities — children fade
+       in from below as they cross 35% visibility. Row-aware
+       staggering: siblings sharing a row get +350ms delay.
+       Bails out under prefers-reduced-motion: reduce.
+
+       OPT OUT per grid by adding data-animation="off" on the grid
+       container (e.g. for single-row CTA rows or stacks where the
+       fade reads as noise).
+  ======================================== -->
+  <script>
+    (function () {
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+      var GRID_SELECTORS = [
+        '.umd-layout-grid-gap-two',
+        '.umd-layout-grid-gap-three',
+        '.umd-layout-grid-gap-four',
+        '.umd-layout-grid-gap-stacked',
+        '.umd-layout-grid-columns-four',
+        '.umd-layout-grid-masonry',
+        '.umd-layout-grid-inline-tablet-rows',
+        '.umd-animation-grid',
+        '.umd-grid-animation'
+      ].map(function (sel) { return sel + ':not([data-animation="off"])'; });
+
+      var style = document.createElement('style');
+      style.textContent = [
+        '@keyframes fade-in-from-bottom {',
+        '  from { opacity: 0; transform: translateY(50px); }',
+        '  to   { opacity: 1; transform: translateY(0); }',
+        '}',
+        ':where(' + GRID_SELECTORS.join(',') + ') > * {',
+        '  opacity: 0;',
+        '  transform: translateY(50px);',
+        '}',
+        '.umd-animation-transition-fade-bottom {',
+        '  animation: fade-in-from-bottom 1s forwards;',
+        '}'
+      ].join('\n');
+      document.head.appendChild(style);
+
+      function tagRowOffsets(grid) {
+        var children = Array.prototype.slice.call(grid.children);
+        var prevTop = null;
+        children.forEach(function (child) {
+          var top = child.getBoundingClientRect().top;
+          if (prevTop !== null && Math.abs(top - prevTop) < 1) {
+            child.dataset.animation = 'offset';
+          } else {
+            delete child.dataset.animation;
+          }
+          prevTop = top;
+        });
+      }
+
+      function init() {
+        var grids = document.querySelectorAll(GRID_SELECTORS.join(','));
+        if (!grids.length) return;
+
+        grids.forEach(tagRowOffsets);
+        window.addEventListener('resize', function () {
+          grids.forEach(tagRowOffsets);
+        });
+
+        var observer = new IntersectionObserver(function (entries) {
+          entries.forEach(function (entry) {
+            if (!entry.isIntersecting) return;
+            var el = entry.target;
+            el.style.animationDelay = el.dataset.animation === 'offset' ? '350ms' : '0ms';
+            el.classList.add('umd-animation-transition-fade-bottom');
+            observer.unobserve(el);
+          });
+        }, { threshold: 0.35 });
+
+        grids.forEach(function (grid) {
+          Array.prototype.forEach.call(grid.children, function (child) {
+            observer.observe(child);
+          });
+        });
+      }
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+      } else {
+        init();
+      }
+    })();
+  </script>
+
+</body>
+</html>

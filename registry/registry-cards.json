@@ -903,7 +903,8 @@
     "label": "Call-to-Action Button",
     "description": "Wraps a child <a> or <button> and applies UMD CTA styling. Use for all primary/secondary/outline CTAs \u2014 do NOT style raw buttons.",
     "slots": [
-      {"name": "default", "required": true, "description": "A single <a> or <button> child.", "example": "<umd-element-call-to-action data-display=\"primary\"><a href=\"/apply\">Apply now</a></umd-element-call-to-action>"}
+      {"name": "default", "required": true, "description": "A single <a> or <button> child.", "example": "<umd-element-call-to-action data-display=\"primary\"><a href=\"/apply\">Apply now</a></umd-element-call-to-action>"},
+      {"name": "text", "required": false, "description": "An additional plain-text link rendered with an underline alongside or below the primary action. Useful for accessible file alternatives.", "example": "<a slot=\"text\" href=\"/document.txt\">Plain Text</a>"}
     ],
     "attrs": [
       {"name": "data-display", "type": "enum", "values": ["primary", "secondary", "outline"], "description": "Button style. Omit for default secondary-ish look."},
@@ -912,7 +913,7 @@
     ],
     "configurable": true,
     "page_types": ["landing", "interior"],
-    "notes": "Clones and enhances the child link/button. Always nest a real anchor or button inside \u2014 don't rely on the component as the interactive element.",
+    "notes": "Clones and enhances the child link/button. Always nest a real anchor or button inside \u2014 don't rely on the component as the interactive element. A download attribute on the primary link automatically adds the document icon. The optional slot=\"text\" link is rendered as underlined supporting text.",
     "source": "npm",
     "priority": 1
   }
